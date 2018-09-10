@@ -1,0 +1,10 @@
+{
+    "Cisco Nexus": {
+        "show vrf": "show vrf",
+        "vrf regexp": "\\n{}\\s+\\d{{1,2}}"
+    },
+    "Huawei CE": {
+        "show vrf": "display ip vpn-instance",
+        "vrf regexp": "\\s{{2}}{}\\s+\\d+:"
+    }
+}

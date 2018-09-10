@@ -1,0 +1,8 @@
+ Total VPN-Instances configured      : 3
+ Total IPv4 VPN-Instances configured : 0
+ Total IPv6 VPN-Instances configured : 3
+
+  VPN-Instance Name               RD                    Address-family
+  Stars                           65401:3009            IPv6          
+  Lasers                          65401:3001            IPv6          
+  Planets                         65401:3000            IPv6          
