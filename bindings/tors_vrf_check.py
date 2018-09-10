@@ -27,8 +27,8 @@ def check_vrf(task, vrf_name):
         return Result(host=task.host, result=vrf_present)
     vrf_interfaces = check_vrf_status.get_vrf_interfaces(
             vrf_name, vendor_dict, task.host["nornir_nos"], connection)
-    result = "Interfaces in VRF {}:\n {}".format(vrf_name, '\n\t'.join(
-        vrf_interfaces))
+    result = "Interfaces in VRF {}:\n\t{}".format(vrf_name, '\n\t'.join(
+        [x.name for x in vrf_interfaces]))
     return Result(host=task.host, result=result)
 
 

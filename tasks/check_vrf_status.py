@@ -6,6 +6,14 @@ class UnacceptableCondition(AppException):
     pass
 
 
+class SwitchInterface:
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return self.name
+
+
 def find_vrf(vrf_name, vendor_dict, connection=None, output=None):
     if connection is not None:
         output = connection.send_command(vendor_dict['show vrf'])
@@ -24,14 +32,15 @@ def get_vrf_interfaces(vrf_name, vendor_dict, nos, connection=None,
         if vrf_name not in output:
             return []
         else:
-            return [x.split(' ')[0] for x in output.strip().split('\n')[1:]]
+            return [SwitchInterface(
+                x.split(' ')[0]) for x in output.strip().split('\n')[1:]]
     elif nos == 'huawei_vrpv8':
         if 'Interface Number : 0' in output:
             return []
         else:
             start_mark = 'Interface list : '
             start = output.index(start_mark)
-            return [x.strip(' ,') for x in output[start+len(
+            return [SwitchInterface(x.strip(' ,')) for x in output[start+len(
                 start_mark):].strip().split('\n')]
     else:
         raise UnacceptableCondition(
