@@ -1,10 +1,12 @@
 {
     "Cisco Nexus": {
         "show vrf": "show vrf",
-        "vrf regexp": "\\n{}\\s+\\d{{1,2}}"
+        "vrf regexp": "\\n{}\\s+\\d{{1,2}}",
+        "show vrf interfaces": "show vrf {} interface"
     },
     "Huawei CE": {
         "show vrf": "display ip vpn-instance",
-        "vrf regexp": "\\s{{2}}{}\\s+\\d+:"
+        "vrf regexp": "\\s{{2}}{}\\s+\\d+:",
+        "show vrf interfaces": "display ip vpn-instance {} interface"
     }
 }

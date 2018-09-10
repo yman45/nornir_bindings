@@ -1,0 +1,4 @@
+Interface                 VRF-Name                        VRF-ID  Site-of-Origin
+Vlan15                    Star                                 6  --
+Ethernet2/28              Star                                 6  --
+port-channel1.120         Star                                 6  --
