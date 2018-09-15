@@ -1,4 +1,5 @@
 import re
+from nornir.core.task import Result
 from app_exception import AppException
 
 
@@ -14,42 +15,45 @@ class SwitchInterface:
         return self.name
 
 
-def find_vrf(vrf_name, vendor_dict, connection=None, output=None):
-    if connection is not None:
-        output = connection.send_command(vendor_dict['show vrf'])
-    if re.search(vendor_dict['vrf regexp'].format(vrf_name), output):
-        return "VRF {} is present on a device".format(vrf_name)
+def find_vrf(task):
+    connection = task.host.get_connection('netmiko')
+    output = connection.send_command(task.host['vendor_vars']['show vrf'])
+    if not re.search(task.host['vendor_vars']['vrf regexp'].format(
+            task.host['vrf_name']), output):
+        return Result(host=task.host, failed=True,
+                      result='VRF {} is not exist on device'.format(
+                          task.host['vrf_name']))
     else:
-        return "VRF {} is not found on a device".format(vrf_name)
+        return Result(host=task.host,
+                      result='VRF {} configured on device'.format(
+                        task.host['vrf_name']))
 
 
-def get_vrf_interfaces(vrf_name, vendor_dict, nos, connection=None,
-                       output=None):
-    if connection is not None:
-        output = connection.send_command(
-                vendor_dict['show vrf interfaces'].format(vrf_name))
-    if nos == 'nxos':
-        if vrf_name not in output:
-            return []
+def get_vrf_interfaces(task):
+    connection = task.host.get_connection('netmiko')
+    output = connection.send_command(
+            task.host['vendor_vars']['show vrf interfaces'].format(
+                task.host['vrf_name']))
+    if task.host['nornir_nos'] == 'nxos':
+        if task.host['vrf_name'] not in output:
+            interfaces_list = []
         else:
-            return [SwitchInterface(
+            interfaces_list = [SwitchInterface(
                 x.split(' ')[0]) for x in output.strip().split('\n')[1:]]
-    elif nos == 'huawei_vrpv8':
+    elif task.host['nornir_nos'] == 'huawei_vrpv8':
         if 'Interface Number : 0' in output:
-            return []
+            interfaces_list = []
         else:
             start_mark = 'Interface list : '
             start = output.index(start_mark)
-            return [SwitchInterface(x.strip(' ,')) for x in output[start+len(
-                start_mark):].strip().split('\n')]
+            interfaces_list = [SwitchInterface(x.strip(' ,')) for x in output[
+                start+len(start_mark):].strip().split('\n')]
     else:
         raise UnacceptableCondition(
-                'task received unsupported NOS - {}'.format(nos))
-
-
-def get_vrf_ll_neighbors(task, vrf_name):
-    pass
-
-
-def get_vrf_bgp_status(task, vrf_name):
-    pass
+                'task received unsupported NOS - {}'.format(
+                    task.host['nornir_nos']))
+    task.host['interfaces'] = interfaces_list
+    return Result(
+            host=task.host, result='Interfaces bound to VRF {}:\n\t{}'.format(
+                task.host['vrf_name'], '\n\t'.join(
+                    [x.name for x in interfaces_list])))
