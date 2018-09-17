@@ -2,7 +2,7 @@ import json
 from nornir.core import InitNornir
 from nornir.plugins.functions.text import print_result
 from utils.nornir_utils import nornir_set_credentials
-from tasks import check_vrf_status
+from tasks import check_vrf_status, check_interfaces
 from app_exception import UnsupportedNOS
 
 
@@ -21,7 +21,7 @@ def check_vrf(task, vrf_name):
              name='Check if VRF exists on node')
     task.run(task=check_vrf_status.get_vrf_interfaces,
              name='Get VRF interfaces list')
-    task.run(task=check_vrf_status.check_interfaces_state,
+    task.run(task=check_interfaces.check_interfaces_state,
              name='Check interfaces state in VRF')
 
 
