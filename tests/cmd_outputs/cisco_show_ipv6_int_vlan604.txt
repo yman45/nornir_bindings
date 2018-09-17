@@ -1,0 +1,24 @@
+IPv6 Interface Status for VRF "default"(1)
+Vlan604, Interface status: protocol-down/link-down/admin-up, iod: 45
+  IPv6 address: 2001:db8:164:16::34
+  IPv6 subnet:  2001:db8:164:16::/64
+  Secondary configured addresses:
+    fd00:15:dbdb:4::1/64
+    fd00:15:cccc:1::1/64
+  IPv6 link-local address: fe80::567f:eeff:fe6b:bd01 (default)
+  IPv6 virtual addresses configured: none
+  IPv6 multicast routing: disabled
+  IPv6 report link local: disabled
+  IPv6 multicast groups locally joined:  
+      ff02::1:ff04:1  ff02::1:ff00:1  ff02::1:ff00:1  ff02::1:ff00:34  
+      ff02::2  ff02::1  
+  IPv6 multicast (S,G) entries joined: none
+  IPv6 MTU: 1500 (using link MTU)
+  IPv6 unicast reverse path forwarding: none
+  IPv6 load sharing: none 
+  IPv6 interface statistics last reset: never
+  IPv6 interface RP-traffic statistics: (forwarded/originated/consumed)
+    Unicast packets:      0/0/0
+    Unicast bytes:        0/0/0
+    Multicast packets:    0/0/0
+    Multicast bytes:      0/0/0

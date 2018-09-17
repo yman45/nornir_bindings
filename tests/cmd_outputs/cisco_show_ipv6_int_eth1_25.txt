@@ -1,0 +1,1 @@
+IPv6 is disabled on Ethernet1/25

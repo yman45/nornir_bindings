@@ -1,0 +1,30 @@
+IP Interface Status for VRF "management"(2)
+Ethernet1/25, Interface status: protocol-up/link-up/admin-up, iod: 8,
+  IP address: 172.18.10.9, IP subnet: 172.18.10.0/26
+  IP broadcast address: 255.255.255.255
+  IP multicast groups locally joined: none
+  IP MTU: 1500 bytes (using link MTU)
+  IP primary address route-preference: 0, tag: 0
+  IP proxy ARP : disabled
+  IP Local Proxy ARP : disabled
+  IP multicast routing: disabled
+  IP icmp redirects: enabled
+  IP directed-broadcast: disabled 
+  IP Forwarding: disabled 
+  IP icmp unreachables (except port): disabled
+  IP icmp port-unreachable: enabled
+  IP unicast reverse path forwarding: none
+  IP load sharing: none 
+  IP interface statistics last reset: never
+  IP interface software stats: (sent/received/forwarded/originated/consumed)
+    Unicast packets    : 110275826/105859290/1797/110274029/105857493
+    Unicast bytes      : 47316724980/37297247827/218450/47316506530/37297061723
+    Multicast packets  : 0/800257/0/0/0
+    Multicast bytes    : 0/36909769/0/0/0
+    Broadcast packets  : 14/38570364/14/0/0
+    Broadcast bytes    : 1428/14153392645/1428/0/0
+    Labeled packets    : 0/0/0/0/0
+    Labeled bytes      : 0/0/0/0/0
+  WCCP Redirect outbound: disabled
+  WCCP Redirect inbound: disabled
+  WCCP Redirect exclude: disabled

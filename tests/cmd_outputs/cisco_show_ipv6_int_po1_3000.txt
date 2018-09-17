@@ -1,0 +1,20 @@
+IPv6 Interface Status for VRF "Galaxy"(6)
+port-channel1.3000, Interface status: protocol-up/link-up/admin-up, iod: 127
+  IPv6 address: fc00::3009:1:f1
+  IPv6 subnet:  fc00::3009:1:f1/128
+  IPv6 link-local address: fe80::eeee:11 (configured)
+  IPv6 virtual addresses configured: none
+  IPv6 multicast routing: disabled
+  IPv6 report link local: disabled
+  IPv6 multicast groups locally joined:  
+      ff02::1:ff01:f1  ff02::2  ff02::1  ff02::1:ffee:11  
+  IPv6 multicast (S,G) entries joined: none
+  IPv6 MTU: 9000 (using link MTU)
+  IPv6 unicast reverse path forwarding: none
+  IPv6 load sharing: none 
+  IPv6 interface statistics last reset: never
+  IPv6 interface RP-traffic statistics: (forwarded/originated/consumed)
+    Unicast packets:      2154/8994267/8925778
+    Unicast bytes:        378430/856848062/718437102
+    Multicast packets:    0/74050/51091
+    Multicast bytes:      0/6664444/3679144

@@ -1,0 +1,20 @@
+Vlanif762 current state : UP 
+IPv6 protocol current state : UP 
+IPv6 is enabled, link-local address is FE80::1 
+  Global unicast address(es):
+    2A02:355:C2D:2106::1, subnet is 2A02:355:C2D:2106::/64 
+  Joined group address(es):
+    FF02::1:FF00:1
+    FF02::2
+    FF02::1
+  MTU is 9000 bytes 
+  ND DAD is enabled, number of DAD attempts: 1
+  ND reachable time is 1200000 milliseconds
+  ND retransmit interval is 1000 milliseconds
+  ND advertised reachable time is 0 milliseconds
+  ND advertised retransmit interval is 0 milliseconds
+  ND router advertisement max interval 14 seconds, min interval 10 seconds
+  ND router advertisements live for 0 seconds
+  ND router advertisements hop-limit 64
+  ND default router preference medium
+  Hosts use stateless autoconfig for addresses

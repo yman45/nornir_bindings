@@ -1,0 +1,19 @@
+40GE1/0/32:4 current state : DOWN 
+IPv6 protocol current state : DOWN 
+IPv6 is enabled, link-local address is FE80::14:1 [TENTATIVE] 
+  Global unicast address(es):
+    2001:DB8:FFFF::15, subnet is 2001:DB8:FFFF::/64 [TENTATIVE] 
+    FD00:2014:32::1, subnet is FD00:2014:32::/64 [TENTATIVE] 
+  Joined group address(es):
+    FF02::1:FF14:1
+    FF02::1:FF00:1
+    FF02::1:FF00:15
+    FF02::2
+    FF02::1
+  MTU is 1500 bytes 
+  ND DAD is enabled, number of DAD attempts: 1
+  ND reachable time is 1200000 milliseconds
+  ND retransmit interval is 1000 milliseconds
+  Hosts use stateless autoconfig for addresses
+
+

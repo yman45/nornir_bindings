@@ -1,0 +1,1 @@
+IP is disabled on Ethernet1/22/2
