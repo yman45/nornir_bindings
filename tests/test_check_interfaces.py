@@ -21,7 +21,9 @@ def test_check_interfaces_state(set_vendor_vars):
     assert eth1_22_2_int.oper_status == 'down'
     assert eth1_25_int.oper_status == 'up'
     assert po1_3000_int.oper_status == 'up'
+    assert po1_3000_int.subinterface is True
     assert vlan604_int.oper_status == 'down'
+    assert vlan604_int.svi is True
     assert len(eth1_22_2_int.ipv4_addresses) == 0
     assert len(eth1_25_int.ipv4_addresses) == 1
     assert eth1_25_int.ipv4_addresses[0].address.exploded == '172.18.10.9'
@@ -56,6 +58,7 @@ def test_check_interfaces_state(set_vendor_vars):
     assert int_40ge1_0_32_4.oper_status == 'down'
     assert int_vlanif1517.oper_status == 'up'
     assert int_vlanif762.oper_status == 'up'
+    assert int_vlanif762.svi is True
     assert len(int_40ge1_0_28_1.ipv4_addresses) == 1
     assert int_40ge1_0_28_1.ipv4_addresses[0].address.exploded == \
         '192.168.13.13'
