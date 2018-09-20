@@ -30,3 +30,9 @@ class IPAddress:
             self.primary = True
         else:
             self.primary = False
+
+    def __str__(self):
+        view = self.address.compressed + '/' + self.prefix_length
+        if self.primary:
+            view += ' (P)'
+        return view
