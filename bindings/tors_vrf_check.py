@@ -21,8 +21,10 @@ def check_vrf(task, vrf_name):
              name='Check if VRF exists on node')
     task.run(task=check_vrf_status.get_vrf_interfaces,
              name='Get VRF interfaces list')
-    task.run(task=check_interfaces.check_interfaces_state,
-             name='Check interfaces state in VRF')
+    task.run(task=check_interfaces.check_interfaces_status,
+             name='Check interfaces status for VRF')
+    task.run(task=check_interfaces.get_interfaces_ip_addresses,
+             name='Gather IP addresses for interfaces in VRF')
 
 
 nrnr = InitNornir(config_file='config.yml')

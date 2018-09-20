@@ -32,7 +32,7 @@ class IPAddress:
             self.primary = False
 
     def __str__(self):
-        view = self.address.compressed + '/' + self.prefix_length
+        view = self.address.compressed + '/' + str(self.prefix_length)
         if self.primary:
             view += ' (P)'
         return view

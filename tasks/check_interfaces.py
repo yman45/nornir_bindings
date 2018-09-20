@@ -124,15 +124,15 @@ def get_interfaces_ip_addresses(task, interface_list=None):
         else:
             raise UnsupportedNOS('task received unsupported NOS - {}'.format(
                 task.host['nornir_nos']))
-        result += 'Interface {} IP addresses:\n'
+        result += 'Interface {} IP addresses:\n'.format(interface.name)
         if len(interface.ipv4_addresses) == 0:
             result += '\tNo IPv4 addresses\n'
         else:
             result += '\tIPv4: {}\n'.format(', '.join(
-                str(interface.ipv4_addresses)))
+                [str(x) for x in interface.ipv4_addresses]))
         if len(interface.ipv6_addresses) == 0:
             result += '\tNo IPv6 addresses\n'
         else:
             result += '\tIPv6: {}\n'.format(', '.join(
-                str(interface.ipv6_addresses)))
+                [str(x) for x in interface.ipv6_addresses]))
     return Result(host=task.host, result=result)
