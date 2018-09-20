@@ -1,12 +1,29 @@
 from tests.helpers import create_fake_task, get_file_contents
-from tests.helpers import interface_name_to_file_name
 from tasks import check_interfaces
 from utils.switch_objects import SwitchInterface
+
+
+def interface_name_to_file_name(name):
+    trans_dict = {ord(':'): '_',
+                  ord('/'): '_',
+                  ord('.'): '_',
+                  ord('-'): '_'}
+    return name.lower().translate(trans_dict)
 
 
 def prepare_interfaces(fake_task, interface_list):
     fake_task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
     return [x for x in fake_task.host['interfaces']]
+
+
+def get_ip_outputs(interfaces, vendor):
+    outputs = []
+    for interface in interfaces:
+        name = interface_name_to_file_name(interface)
+        file_names = [vendor+'_show_ipv'+x+'_int_'+name+'.txt' for x in (
+            '4', '6')]
+        outputs.extend([get_file_contents(x) for x in file_names])
+    return outputs
 
 
 def test_check_interfaces_status(set_vendor_vars):
@@ -52,22 +69,13 @@ def test_get_interfaces_ip_addresses(set_vendor_vars):
     vendor_vars = set_vendor_vars
     cisco_interface_names = [
             'Ethernet1/22/2', 'Ethernet1/25', 'port-channel1.3000', 'Vlan604']
-    outputs = []
-    for interface in cisco_interface_names:
-        name = interface_name_to_file_name(interface)
-        file_names = ['cisco_show_ipv'+x+'_int_'+name+'.txt' for x in (
-            '4', '6')]
-        outputs.extend([get_file_contents(x) for x in file_names])
+    outputs = get_ip_outputs(cisco_interface_names, 'cisco')
     cisco_task = create_fake_task(
             None, vendor_vars['Cisco Nexus'], None, 'nxos',
             check_interfaces.get_interfaces_ip_addresses, effect=outputs)
-    cisco_task.host['interfaces'] = [SwitchInterface(
-        x) for x in cisco_interface_names]
+    eth1_22_2_int, eth1_25_int, po1_3000_int, vlan604_int = prepare_interfaces(
+        cisco_task, cisco_interface_names)
     check_interfaces.get_interfaces_ip_addresses(cisco_task)
-    eth1_22_2_int = cisco_task.host['interfaces'][0]
-    eth1_25_int = cisco_task.host['interfaces'][1]
-    po1_3000_int = cisco_task.host['interfaces'][2]
-    vlan604_int = cisco_task.host['interfaces'][3]
     assert len(eth1_22_2_int.ipv4_addresses) == 0
     assert len(eth1_25_int.ipv4_addresses) == 1
     assert eth1_25_int.ipv4_addresses[0].address.exploded == '172.18.10.9'
@@ -86,23 +94,13 @@ def test_get_interfaces_ip_addresses(set_vendor_vars):
     assert vlan604_int.ipv6_addresses[1].primary is False
     huawei_interface_names = [
              '40GE1/0/28:1', '40GE1/0/32:4', 'Vlanif1517', 'Vlanif762']
-    outputs = []
-    for interface in huawei_interface_names:
-        name = interface_name_to_file_name(interface)
-        file_names = ['huawei_show_ipv'+x+'_int_'+name+'.txt' for x in (
-            '4', '6')]
-        outputs.extend([get_file_contents(x) for x in file_names])
+    outputs = get_ip_outputs(huawei_interface_names, 'huawei')
     huawei_task = create_fake_task(
             None, vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
             check_interfaces.get_interfaces_ip_addresses, effect=outputs)
-    huawei_task.host['interfaces'] = [SwitchInterface(
-        x) for x in huawei_interface_names]
-    huawei_task.host['nornir_nos'] = 'huawei_vrpv8'
+    int_40ge1_0_28_1, int_40ge1_0_32_4, int_vlanif1517, int_vlanif762 = \
+        prepare_interfaces(huawei_task, huawei_interface_names)
     check_interfaces.get_interfaces_ip_addresses(huawei_task)
-    int_40ge1_0_28_1 = huawei_task.host['interfaces'][0]
-    int_40ge1_0_32_4 = huawei_task.host['interfaces'][1]
-    int_vlanif1517 = huawei_task.host['interfaces'][2]
-    int_vlanif762 = huawei_task.host['interfaces'][3]
     assert len(int_40ge1_0_28_1.ipv4_addresses) == 1
     assert int_40ge1_0_28_1.ipv4_addresses[0].address.exploded == \
         '192.168.13.13'
