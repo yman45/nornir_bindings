@@ -11,7 +11,8 @@ def get_file_contents(file_name):
     return contents
 
 
-def create_fake_task(output, vendor_vars, vrf_name, test_obj, effect=None):
+def create_fake_task(output, vendor_vars, vrf_name, nos, test_obj,
+                     effect=None):
     connection = Mock()
     if effect is None:
         connection.send_command = Mock(return_value=output)
@@ -20,6 +21,7 @@ def create_fake_task(output, vendor_vars, vrf_name, test_obj, effect=None):
     host = Host('test-host')
     host['vendor_vars'] = vendor_vars
     host['vrf_name'] = vrf_name
+    host['nornir_nos'] = nos
     host.get_connection = Mock(return_value=connection)
     fake_task = Task(test_obj)
     fake_task.host = host

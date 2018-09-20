@@ -4,21 +4,21 @@ from tasks import check_interfaces
 from utils.switch_objects import SwitchInterface
 
 
+def prepare_interfaces(fake_task, interface_list):
+    fake_task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
+    return [x for x in fake_task.host['interfaces']]
+
+
 def test_check_interfaces_status(set_vendor_vars):
     vendor_vars = set_vendor_vars
     cisco_interface_names = [
             'Ethernet1/22/2', 'Ethernet1/25', 'port-channel1.3000', 'Vlan604']
     cisco_task = create_fake_task(get_file_contents(
-        'cisco_show_int_brief.txt'), vendor_vars['Cisco Nexus'], None,
+        'cisco_show_int_brief.txt'), vendor_vars['Cisco Nexus'], None, 'nxos',
         check_interfaces.check_interfaces_status)
-    cisco_task.host['interfaces'] = [SwitchInterface(
-        x) for x in cisco_interface_names]
-    cisco_task.host['nornir_nos'] = 'nxos'
+    eth1_22_2_int, eth1_25_int, po1_3000_int, vlan604_int = prepare_interfaces(
+        cisco_task, cisco_interface_names)
     check_interfaces.check_interfaces_status(cisco_task)
-    eth1_22_2_int = cisco_task.host['interfaces'][0]
-    eth1_25_int = cisco_task.host['interfaces'][1]
-    po1_3000_int = cisco_task.host['interfaces'][2]
-    vlan604_int = cisco_task.host['interfaces'][3]
     assert eth1_22_2_int.admin_status == 'down'
     assert eth1_25_int.admin_status == 'up'
     assert po1_3000_int.admin_status == 'up'
@@ -33,15 +33,10 @@ def test_check_interfaces_status(set_vendor_vars):
             '40GE1/0/28:1', '40GE1/0/32:4', 'Vlanif1517', 'Vlanif762']
     huawei_task = create_fake_task(get_file_contents(
             'huawei_show_int_brief.txt'), vendor_vars['Huawei CE'], None,
-            check_interfaces.check_interfaces_status)
-    huawei_task.host['interfaces'] = [SwitchInterface(
-        x) for x in huawei_interface_names]
-    huawei_task.host['nornir_nos'] = 'huawei_vrpv8'
+            'huawei_vrpv8', check_interfaces.check_interfaces_status)
+    int_40ge1_0_28_1, int_40ge1_0_32_4, int_vlanif1517, int_vlanif762 = \
+        prepare_interfaces(huawei_task, huawei_interface_names)
     check_interfaces.check_interfaces_status(huawei_task)
-    int_40ge1_0_28_1 = huawei_task.host['interfaces'][0]
-    int_40ge1_0_32_4 = huawei_task.host['interfaces'][1]
-    int_vlanif1517 = huawei_task.host['interfaces'][2]
-    int_vlanif762 = huawei_task.host['interfaces'][3]
     assert int_40ge1_0_28_1.admin_status == 'down'
     assert int_40ge1_0_32_4.admin_status == 'up'
     assert int_vlanif1517.admin_status == 'up'
@@ -63,12 +58,11 @@ def test_get_interfaces_ip_addresses(set_vendor_vars):
         file_names = ['cisco_show_ipv'+x+'_int_'+name+'.txt' for x in (
             '4', '6')]
         outputs.extend([get_file_contents(x) for x in file_names])
-    cisco_task = create_fake_task(None, vendor_vars['Cisco Nexus'], None,
-                                  check_interfaces.get_interfaces_ip_addresses,
-                                  effect=outputs)
+    cisco_task = create_fake_task(
+            None, vendor_vars['Cisco Nexus'], None, 'nxos',
+            check_interfaces.get_interfaces_ip_addresses, effect=outputs)
     cisco_task.host['interfaces'] = [SwitchInterface(
         x) for x in cisco_interface_names]
-    cisco_task.host['nornir_nos'] = 'nxos'
     check_interfaces.get_interfaces_ip_addresses(cisco_task)
     eth1_22_2_int = cisco_task.host['interfaces'][0]
     eth1_25_int = cisco_task.host['interfaces'][1]
@@ -99,7 +93,7 @@ def test_get_interfaces_ip_addresses(set_vendor_vars):
             '4', '6')]
         outputs.extend([get_file_contents(x) for x in file_names])
     huawei_task = create_fake_task(
-            None, vendor_vars['Huawei CE'], None,
+            None, vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
             check_interfaces.get_interfaces_ip_addresses, effect=outputs)
     huawei_task.host['interfaces'] = [SwitchInterface(
         x) for x in huawei_interface_names]
