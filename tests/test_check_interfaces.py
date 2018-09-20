@@ -118,3 +118,23 @@ def test_get_interfaces_ip_addresses(set_vendor_vars):
     assert len(int_vlanif762.ipv6_addresses) == 2
     assert int_vlanif762.ipv6_addresses[0].address.is_link_local is True
     assert int_vlanif762.ipv6_addresses[1].prefix_length == 64
+
+
+def test_check_arbitrary_interface(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interface = ['40GE1/0/32:4']
+    fake_task = create_fake_task(get_file_contents(
+            'huawei_show_int_brief.txt'), vendor_vars['Huawei CE'], None,
+            'huawei_vrpv8', check_interfaces.check_interfaces_status)
+    check_interfaces.check_interfaces_status(fake_task,
+                                             interface_list=interface)
+    assert fake_task.host['interfaces'][0].admin_status == 'up'
+    assert fake_task.host['interfaces'][0].oper_status == 'down'
+    outputs = get_ip_outputs(interface, 'huawei')
+    fake_task = create_fake_task(
+            None, vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
+            check_interfaces.get_interfaces_ip_addresses, effect=outputs)
+    int_40ge1_0_32_4 = prepare_interfaces(fake_task, interface)[0]
+    check_interfaces.get_interfaces_ip_addresses(fake_task)
+    assert len(int_40ge1_0_32_4.ipv4_addresses) == 0
+    assert len(int_40ge1_0_32_4.ipv6_addresses) == 3
