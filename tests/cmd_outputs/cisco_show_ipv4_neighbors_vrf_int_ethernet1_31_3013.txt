@@ -1,0 +1,14 @@
+
+Flags: * - Adjacencies learnt on non-active FHRP router
+       + - Adjacencies synced via CFSoE
+       # - Adjacencies Throttled for Glean
+       D - Static Adjacencies attached to down interface
+
+IP ARP Table
+Total number of entries: 5
+Address           Age       MAC Address     Interface
+192.168.138.68    00:04:32  0080.ea42.6308  Ethernet1/31.3013           
+192.168.138.69    00:06:26  0080.ea42.637d  Ethernet1/31.3013           
+192.168.138.70    00:03:59  0080.ea42.5e13  Ethernet1/31.3013           
+192.168.138.71    00:03:47  0080.ea42.5e37  Ethernet1/31.3013           
+192.168.139.254   00:12:47  001b.21a1.1a0d  Ethernet1/31.3013           

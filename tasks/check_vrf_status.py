@@ -28,15 +28,17 @@ def get_vrf_interfaces(task):
             interfaces_list = []
         else:
             interfaces_list = [SwitchInterface(
-                x.split(' ')[0]) for x in output.strip().split('\n')[1:]]
+                x.split(' ')[0], mode='routed') for x in output.strip().split(
+                    '\n')[1:]]
     elif task.host['nornir_nos'] == 'huawei_vrpv8':
         if 'Interface Number : 0' in output:
             interfaces_list = []
         else:
             start_mark = 'Interface list : '
             start = output.index(start_mark)
-            interfaces_list = [SwitchInterface(x.strip(' ,')) for x in output[
-                start+len(start_mark):].strip().split('\n')]
+            interfaces_list = [SwitchInterface(
+                x.strip(' ,'), mode='routed') for x in output[start+len(
+                    start_mark):].strip().split('\n')]
     else:
         raise UnsupportedNOS(
                 'task received unsupported NOS - {}'.format(

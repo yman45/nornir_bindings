@@ -25,6 +25,8 @@ def check_vrf(task, vrf_name):
              name='Check interfaces status for VRF')
     task.run(task=check_interfaces.get_interfaces_ip_addresses,
              name='Gather IP addresses for interfaces in VRF')
+    task.run(task=check_interfaces.get_interfaces_ip_neighbors,
+             name='Gather IP neighbors for interfaces in VRF')
 
 
 nrnr = InitNornir(config_file='config.yml')

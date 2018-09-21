@@ -1,0 +1,33 @@
+-----------------------------------------------------------------------------
+IPv6 Address : FE80::135:44                                                      
+Link-layer   : 6805-ca30-4589                     State     : REACH             
+Interface    : 100GE1/0/2.3000                    Age       : 12                
+VLAN         : 3000                               CEVLAN    : -                 
+VPN name     : Lasers                             Is Router : TRUE              
+Secure FLAG  : UN-SECURE                          Nickname  : -                 
+Source IP    : -                                                                
+Destination IP: -                                                               
+VNI          : -                                  BD        : -                 
+
+IPv6 Address : FE80::D34:152:1                                                      
+Link-layer   : 001b-21d7-6b15                     State     : REACH             
+Interface    : 100GE1/0/2.3000                    Age       : 12                
+VLAN         : 3000                               CEVLAN    : -                 
+VPN name     : Lasers                             Is Router : TRUE              
+Secure FLAG  : UN-SECURE                          Nickname  : -                 
+Source IP    : -                                                                
+Destination IP: -                                                               
+VNI          : -                                  BD        : -                 
+
+IPv6 Address : FE80::CC2:214:65:8                                                      
+Link-layer   : 487b-6bf9-cd02                     State     : STALE             
+Interface    : 100GE1/0/2.3000                    Age       : 38                
+VLAN         : 3000                               CEVLAN    : -                 
+VPN name     : Lasers                             Is Router : TRUE              
+Secure FLAG  : UN-SECURE                          Nickname  : -                 
+Source IP    : -                                                                
+Destination IP: -                                                               
+VNI          : -                                  BD        : -                 
+
+-----------------------------------------------------------------------------
+Total: 3        Dynamic: 3      Static: 0      

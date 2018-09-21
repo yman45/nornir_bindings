@@ -1,0 +1,10 @@
+ARP Entry Types: D - Dynamic, S - Static, I - Interface, O - OpenFlow
+EXP: Expire-time VLAN:VLAN or Bridge Domain
+
+IP ADDRESS      MAC ADDRESS    EXP(M) TYPE/VLAN       INTERFACE        VPN-INSTANCE
+------------------------------------------------------------------------------
+172.18.176.218 407d-0fdc-52f0        I               100GE1/0/2.3000   Lasers
+172.18.176.1   c81f-be2b-dcb6    4   D               100GE1/0/2.3000   Lasers
+172.18.179.254 90e2-ba3d-c1a1   16   D               100GE1/0/2.3000   Lasers
+------------------------------------------------------------------------------
+Total:3         Dynamic:2       Static:0    Interface:1    OpenFlow:0

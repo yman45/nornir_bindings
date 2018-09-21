@@ -61,7 +61,8 @@ def check_interfaces_status(task, interface_list=None):
 
 def get_interfaces_ip_addresses(task, interface_list=None):
     if interface_list:
-        task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
+        task.host['interfaces'] = [SwitchInterface(
+            x, mode='routed') for x in interface_list]
     result = 'IP addresses on interfaces:\n'
     connection = task.host.get_connection('netmiko')
     for interface in task.host['interfaces']:
@@ -135,4 +136,49 @@ def get_interfaces_ip_addresses(task, interface_list=None):
         else:
             result += '\tIPv6: {}\n'.format(', '.join(
                 [str(x) for x in interface.ipv6_addresses]))
+    return Result(host=task.host, result=result)
+
+
+def get_interfaces_ip_neighbors(task, interface_list=None):
+    if interface_list:
+        task.host['interfaces'] = [SwitchInterface(
+            x, mode='routed') for x in interface_list]
+    connection = task.host.get_connection('netmiko')
+    result = 'IP neighbors learned on interfaces:\n'
+    for interface in task.host['interfaces']:
+        result += '\tInterface {} '.format(interface.name)
+        if interface.mode != 'routed':
+            interface.ipv4_neighbors = 0
+            interface.ipv6_neighbors = 0
+            result += 'Interface {} is in switched mode'.format(interface.name)
+            continue
+        # must use VRF name in 'non-default' VRF for Cisco, but unnecessary in
+        # any case for Huawei; we force VRF usage on Cisco even for 'default'
+        vrf_name = task.host['vrf_name'] if task.host[
+                'vrf_name'] else 'default'
+        ipv4_neighbors = connection.send_command(
+            task.host['vendor_vars']['show ipv4 neighbors interface'].format(
+                interface.name, vrf_name))
+        ipv6_neighbors = connection.send_command(
+            task.host['vendor_vars']['show ipv6 neighbors interface'].format(
+                interface.name, vrf_name))
+        if task.host['nornir_nos'] == 'nxos':
+            search_line = r'Total number of entries:\s+(\d+)'
+        elif task.host['nornir_nos'] == 'huawei_vrpv8':
+            search_line = r'Dynamic:(?:\s+)?(\d+)'
+        else:
+            raise UnsupportedNOS('task received unsupported NOS - {}'.format(
+                task.host['nornir_nos']))
+        if not ipv4_neighbors:
+            interface.ipv4_neighbors = 0
+        else:
+            interface.ipv4_neighbors = int(re.search(
+                search_line, ipv4_neighbors).group(1))
+        if not ipv6_neighbors:
+            interface.ipv6_neighbors = 0
+        else:
+            interface.ipv6_neighbors = int(re.search(
+                search_line, ipv6_neighbors).group(1))
+        result += 'IPv4 neighbors: {};IPv6 neighbors: {}\n'.format(
+                interface.ipv4_neighbors, interface.ipv6_neighbors)
     return Result(host=task.host, result=result)

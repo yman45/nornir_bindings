@@ -1,0 +1,10 @@
+
+Flags: # - Adjacencies Throttled for Glean
+       G - Adjacencies of vPC peer with G/W bit
+
+IPv6 Adjacency Table for VRF Galaxy
+Total number of entries: 3
+Address         Age       MAC Address     Pref Source     Interface
+fe80::dddd:1        3w3d  0007.432c.4938  50   icmpv6     Ethernet1/31.3013
+fe80::cccc:3        3w3d  0007.432c.4058  50   icmpv6     Ethernet1/31.3013
+fe80::15:e4         3w3d  bc62.0e51.220f  50   icmpv6     Ethernet1/31.3013

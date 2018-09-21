@@ -16,11 +16,11 @@ def prepare_interfaces(fake_task, interface_list):
     return [x for x in fake_task.host['interfaces']]
 
 
-def get_ip_outputs(interfaces, vendor):
+def get_ip_outputs(interfaces, vendor, pad=''):
     outputs = []
     for interface in interfaces:
         name = interface_name_to_file_name(interface)
-        file_names = [vendor+'_show_ipv'+x+'_int_'+name+'.txt' for x in (
+        file_names = [vendor+'_show_ipv'+x+pad+'_int_'+name+'.txt' for x in (
             '4', '6')]
         outputs.extend([get_file_contents(x) for x in file_names])
     return outputs
@@ -134,7 +134,38 @@ def test_check_arbitrary_interface(set_vendor_vars):
     fake_task = create_fake_task(
             None, vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
             check_interfaces.get_interfaces_ip_addresses, effect=outputs)
-    int_40ge1_0_32_4 = prepare_interfaces(fake_task, interface)[0]
-    check_interfaces.get_interfaces_ip_addresses(fake_task)
-    assert len(int_40ge1_0_32_4.ipv4_addresses) == 0
-    assert len(int_40ge1_0_32_4.ipv6_addresses) == 3
+    check_interfaces.get_interfaces_ip_addresses(fake_task,
+                                                 interface_list=interface)
+    assert len(fake_task.host['interfaces'][0].ipv4_addresses) == 0
+    assert len(fake_task.host['interfaces'][0].ipv6_addresses) == 3
+
+
+def test_get_interfaces_ip_neighbors(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    sw_task = create_fake_task('placeholder', vendor_vars['Cisco Nexus'],
+                               'Galaxy', 'nxos',
+                               check_interfaces.get_interfaces_ip_neighbors)
+    sw_task.host['interfaces'] = [SwitchInterface('Ethernet1/32')]
+    check_interfaces.get_interfaces_ip_neighbors(sw_task)
+    assert sw_task.host['interfaces'][0].ipv4_neighbors == 0
+    outputs = get_ip_outputs(['Ethernet1/31.3013'], 'cisco',
+                             pad='_neighbors_vrf')
+    cisco_task = create_fake_task(
+            None, vendor_vars['Cisco Nexus'], 'Galaxy', 'nxos',
+            check_interfaces.get_interfaces_ip_neighbors, effect=outputs)
+    interface = prepare_interfaces(cisco_task, ['Ethernet1/31.3013'])[0]
+    check_interfaces.get_interfaces_ip_neighbors(cisco_task)
+    assert interface.ipv4_neighbors == 5
+    assert interface.ipv6_neighbors == 3
+    outputs = get_ip_outputs(['100GE1/0/2.3000', 'Vlanif761'], 'huawei',
+                             pad='_neighbors')
+    huawei_task = create_fake_task(
+            None, vendor_vars['Huawei CE'], 'Lasers', 'huawei_vrpv8',
+            check_interfaces.get_interfaces_ip_neighbors, effect=outputs)
+    int_100ge1_0_2_3000, int_vlanif761 = prepare_interfaces(
+            huawei_task, ['100GE1/0/2.3000', 'Vlanif761'])
+    check_interfaces.get_interfaces_ip_neighbors(huawei_task)
+    assert int_100ge1_0_2_3000.ipv4_neighbors == 2
+    assert int_100ge1_0_2_3000.ipv6_neighbors == 3
+    assert int_vlanif761.ipv4_neighbors == 0
+    assert int_vlanif761.ipv6_neighbors == 0
