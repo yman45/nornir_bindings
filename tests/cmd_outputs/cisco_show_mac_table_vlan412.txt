@@ -1,0 +1,8 @@
+Legend: 
+        * - primary entry, G - Gateway MAC, (R) - Routed MAC, O - Overlay MAC
+        age - seconds since first seen,+ - primary entry using vPC Peer-Link
+   VLAN     MAC Address      Type      age     Secure NTFY   Ports/SWID.SSID.LID
+---------+-----------------+--------+---------+------+----+------------------
+* 412      0015.b2a9.9016    dynamic   11192000    F    F  Eth1/2/2
+* 412      0015.b2aa.06c6    dynamic   16461890    F    F  Eth1/6/2
+* 412      0015.b2aa.06ca    dynamic   16460200    F    F  Eth1/6/1

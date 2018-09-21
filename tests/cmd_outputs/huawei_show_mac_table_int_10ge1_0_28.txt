@@ -1,0 +1,13 @@
+Flags: * - Backup  
+       # - forwarding logical interface, operations cannot be performed based 
+           on the interface.
+BD   : bridge-domain   Age : dynamic MAC learned time in seconds
+-------------------------------------------------------------------------------
+MAC Address    VLAN/VSI/BD   Learned-From        Type                Age
+-------------------------------------------------------------------------------
+e0d5-5e19-49b4 555/-/-       10GE1/0/28          dynamic            6848
+e0d5-5e19-49b4 613/-/-       10GE1/0/28          dynamic            6775
+e0d5-5e19-49b4 780/-/-       10GE1/0/28          dynamic            6796
+e0d5-5e19-49b4 15/-/-        10GE1/0/28          dynamic            6848
+-------------------------------------------------------------------------------
+Total items: 4

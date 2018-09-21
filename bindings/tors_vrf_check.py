@@ -2,7 +2,7 @@ import json
 from nornir.core import InitNornir
 from nornir.plugins.functions.text import print_result
 from utils.nornir_utils import nornir_set_credentials
-from tasks import check_vrf_status, check_interfaces
+from tasks import check_vrf_status, check_interfaces, check_mac_table
 from app_exception import UnsupportedNOS
 
 
@@ -27,6 +27,8 @@ def check_vrf(task, vrf_name):
              name='Gather IP addresses for interfaces in VRF')
     task.run(task=check_interfaces.get_interfaces_ip_neighbors,
              name='Gather IP neighbors for interfaces in VRF')
+    task.run(task=check_mac_table.get_interfaces_macs,
+             name='Gather learned MAC for interfaces in VRF')
 
 
 nrnr = InitNornir(config_file='config.yml')

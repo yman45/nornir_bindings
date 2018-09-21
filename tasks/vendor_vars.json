@@ -7,7 +7,9 @@
         "show ipv4 interface": "show ip interface {}",
         "show ipv6 interface": "show ipv6 interface {}",
         "show ipv4 neighbors interface": "show ip arp {} vrf {}",
-        "show ipv6 neighbors interface": "show ipv6 neighbor {} vrf {}"
+        "show ipv6 neighbors interface": "show ipv6 neighbor {} vrf {}",
+        "show mac table interface": "show mac address-table interface {}",
+        "show mac table vlan": "show mac address-table vlan {}"
     },
     "Huawei CE": {
         "show vrf": "display ip vpn-instance",
@@ -17,6 +19,8 @@
         "show ipv4 interface": "display ip interface {}",
         "show ipv6 interface": "display ipv6 interface {}",
         "show ipv4 neighbors interface": "display arp interface {}",
-        "show ipv6 neighbors interface": "display ipv6 neighbors {}"
+        "show ipv6 neighbors interface": "display ipv6 neighbors {}",
+        "show mac table interface": "display mac-address interface {}",
+        "show mac table vlan": "display mac-address vlan {}"
     }
 }

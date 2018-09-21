@@ -26,7 +26,7 @@ def check_interfaces_status(task, interface_list=None):
         else:
             interface_name = interface.name
         brief_line_start = interfaces_brief_output.index(interface_name)
-        # 'find' in a next line will cover end of output (last line) situations
+        # 'find' will cover end of output (last line) situations
         brief_line_end = interfaces_brief_output.find('\n', brief_line_start)
         brief_line = interfaces_brief_output[brief_line_start:brief_line_end]
         if task.host['nornir_nos'] == 'nxos':
@@ -120,6 +120,8 @@ def get_interfaces_ip_addresses(task, interface_list=None):
                         r'([0-9A-Fa-f:]+), subnet is [0-9A-Fa-f:]+/(\d{1,3})',
                         ipv6_status)
                 for address in match:
+                    # There is no primary IPv6 address concept for Huawei,
+                    # unlike Cisco
                     interface.ipv6_addresses.append(IPAddress(
                         address[0], address[1], True))
         else:
@@ -169,6 +171,7 @@ def get_interfaces_ip_neighbors(task, interface_list=None):
         else:
             raise UnsupportedNOS('task received unsupported NOS - {}'.format(
                 task.host['nornir_nos']))
+        # Huawei returns empty output for 'down' interfaces
         if not ipv4_neighbors:
             interface.ipv4_neighbors = 0
         else:
@@ -179,6 +182,6 @@ def get_interfaces_ip_neighbors(task, interface_list=None):
         else:
             interface.ipv6_neighbors = int(re.search(
                 search_line, ipv6_neighbors).group(1))
-        result += 'IPv4 neighbors: {};IPv6 neighbors: {}\n'.format(
+        result += 'IPv4 neighbors: {}; IPv6 neighbors: {}\n'.format(
                 interface.ipv4_neighbors, interface.ipv6_neighbors)
     return Result(host=task.host, result=result)
