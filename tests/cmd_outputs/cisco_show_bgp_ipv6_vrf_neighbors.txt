@@ -1,0 +1,115 @@
+BGP neighbor is fe80::162:15,  remote AS 65000, ebgp link,  Peer index 2
+  BGP version 4, remote router ID 172.20.15.5
+  BGP state = Established, up for 18w3d
+  Using port-channel1.30 as update source for this peer
+  Peer is directly attached, interface port-channel1.30
+  Last read 00:00:29, hold time = 180, keepalive interval is 60 seconds
+  Last written 00:00:54, keepalive timer expiry due 00:00:05
+  Received 638090 messages, 3 notifications, 0 bytes in queue
+  Sent 513881 messages, 0 notifications, 0 bytes in queue
+  Connections established 4, dropped 3
+  Last reset by us 18w3d, due to session closed
+  Last reset by peer 22w5d, due to peer deconfigured
+
+  Neighbor capabilities:
+  Dynamic capability: advertised (mp, refresh, gr) 
+  Dynamic capability (old): advertised 
+  Route refresh capability (new): advertised received 
+  Route refresh capability (old): advertised 
+  4-Byte AS capability: advertised received 
+  Address family IPv6 Unicast: advertised received 
+  Graceful Restart capability: advertised received
+
+  Graceful Restart Parameters:
+  Address families advertised to peer:
+    IPv6 Unicast  
+  Address families received from peer:
+  Forwarding state preserved by peer for:
+  Restart time advertised to peer: 120 seconds
+  Stale time for routes advertised by peer: 300 seconds
+  Restart time advertised by peer: 0 seconds
+  Extended Next Hop Encoding Capability: advertised 
+
+  Message statistics:
+                              Sent               Rcvd
+  Opens:                     32717                  4  
+  Notifications:                 0                  3  
+  Updates:                      28              88179  
+  Keepalives:               481136             549901  
+  Route Refresh:                 0                  3  
+  Capability:                    0                  0  
+  Total:                    513881             638090  
+  Total bytes:             9143915           16165085  
+  Bytes in queue:                0                  0  
+
+  For address family: IPv6 Unicast
+  BGP table version 349433, neighbor version 349433
+  1975 accepted paths consume 110600 bytes of memory
+   First Update Rcvd           : 18w3d
+   Last Update Rcvd            : 05:08:54
+  7 sent paths
+   First Update Sent           : 18w3d
+   Last Update Sent            : 4w4d
+  Community attribute sent to this neighbor
+
+  Local host: fe80::f15:a1, Local port: 47321
+  Foreign host: fe80::162:15, Foreign port: 179
+  fd = 45
+
+BGP neighbor is fe80::152:12,  remote AS 65001, ebgp link,  Peer index 4
+  BGP version 4, remote router ID 172.20.134.2
+  BGP state = Established, up for 2w2d
+  Using port-channel2.31 as update source for this peer
+  Peer is directly attached, interface port-channel2.31
+  Last read 00:00:09, hold time = 180, keepalive interval is 60 seconds
+  Last written 00:00:25, keepalive timer expiry due 00:00:34
+  Received 520768 messages, 3 notifications, 0 bytes in queue
+  Sent 384109 messages, 0 notifications, 0 bytes in queue
+  Connections established 5, dropped 4
+  Last reset by us 2w2d, due to other configuration change
+  Last reset by peer 28w6d, due to peer deconfigured
+
+  Neighbor capabilities:
+  Dynamic capability: advertised (mp, refresh, gr) 
+  Dynamic capability (old): advertised 
+  Route refresh capability (new): advertised received 
+  Route refresh capability (old): advertised 
+  4-Byte AS capability: advertised received 
+  Address family IPv6 Unicast: advertised received 
+  Graceful Restart capability: advertised received
+
+  Graceful Restart Parameters:
+  Address families advertised to peer:
+    IPv6 Unicast  
+  Address families received from peer:
+  Forwarding state preserved by peer for:
+  Restart time advertised to peer: 120 seconds
+  Stale time for routes advertised by peer: 300 seconds
+  Restart time advertised by peer: 0 seconds
+  Extended Next Hop Encoding Capability: advertised 
+
+  Message statistics:
+                              Sent               Rcvd
+  Opens:                      1208                  5  
+  Notifications:                 0                  3  
+  Updates:                      27              83182  
+  Keepalives:               382874             437575  
+  Route Refresh:                 0                  3  
+  Capability:                    0                  0  
+  Total:                    384109             520768  
+  Total bytes:             7276844           13687598  
+  Bytes in queue:                0                  0  
+
+  For address family: IPv6 Unicast
+  BGP table version 349433, neighbor version 349433
+  1975 accepted paths consume 110600 bytes of memory
+   First Update Rcvd           : 2w2d
+   Last Update Rcvd            : 05:08:58
+  7 sent paths
+   First Update Sent           : 2w2d
+   Last Update Sent            : 2w2d
+  Community attribute sent to this neighbor
+
+  Local host: fe80::f15:a2, Local port: 179
+  Foreign host: fe80::152:12, Foreign port: 63846
+  fd = 71

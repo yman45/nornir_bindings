@@ -61,3 +61,43 @@ def test_get_vrf_interfaces(set_vendor_vars):
     task_huawei_no_int.host['nornir_nos'] = 'eos'
     with pytest.raises(UnsupportedNOS):
         check_vrf_status.get_vrf_interfaces(task_huawei_no_int)
+
+
+def test_check_vrf_bgp_neighbors(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    cisco_v6_task = create_fake_task(get_file_contents(
+        'cisco_show_bgp_ipv6_vrf_neighbors.txt'), vendor_vars['Cisco Nexus'],
+        'Galaxy', 'nxos', check_vrf_status.check_vrf_bgp_neighbors)
+    check_vrf_status.check_vrf_bgp_neighbors(cisco_v6_task, af='v6')
+    assert len(cisco_v6_task.host['bgp_neighbors']) == 2
+    assert cisco_v6_task.host['bgp_neighbors']['fe80::152:12'].state == \
+        'established'
+    assert cisco_v6_task.host['bgp_neighbors']['fe80::152:12']._type == \
+        'external'
+    assert cisco_v6_task.host['bgp_neighbors']['fe80::152:12'].as_number == \
+        '65001'
+    assert cisco_v6_task.host['bgp_neighbors']['fe80::152:12'].router_id.\
+        compressed == '172.20.134.2'
+    assert cisco_v6_task.host['bgp_neighbors']['fe80::152:12'].af['ipv4'] is \
+        None
+    v6 = cisco_v6_task.host['bgp_neighbors']['fe80::152:12'].af['ipv6']
+    assert v6.learned_routes == 1975
+    assert v6.sent_routes == 7
+    huawei_v6_task = create_fake_task(get_file_contents(
+        'huawei_show_bgp_ipv6_vrf_neighbors.txt'), vendor_vars['Huawei CE'],
+        'Galaxy', 'huawei_vrpv8', check_vrf_status.check_vrf_bgp_neighbors)
+    check_vrf_status.check_vrf_bgp_neighbors(huawei_v6_task, af='v6')
+    assert len(huawei_v6_task.host['bgp_neighbors']) == 2
+    assert huawei_v6_task.host['bgp_neighbors']['fe80::dd:a1'].state == \
+        'established'
+    assert huawei_v6_task.host['bgp_neighbors']['fe80::dd:a1']._type == \
+        'external'
+    assert huawei_v6_task.host['bgp_neighbors']['fe80::dd:a1'].as_number == \
+        '65012'
+    assert huawei_v6_task.host['bgp_neighbors']['fe80::dd:a1'].router_id.\
+        compressed == '172.24.16.1'
+    assert huawei_v6_task.host['bgp_neighbors']['fe80::dd:a1'].af['ipv4'] is \
+        None
+    v6 = huawei_v6_task.host['bgp_neighbors']['fe80::dd:a1'].af['ipv6']
+    assert v6.learned_routes == 1980
+    assert v6.sent_routes == 1982

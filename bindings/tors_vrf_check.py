@@ -29,6 +29,8 @@ def check_vrf(task, vrf_name):
              name='Gather IP neighbors for interfaces in VRF')
     task.run(task=check_mac_table.get_interfaces_macs,
              name='Gather learned MAC for interfaces in VRF')
+    task.run(task=check_vrf_status.check_vrf_bgp_neighbors,
+             name='Get BGP neighbors in VRF and they state')
 
 
 nrnr = InitNornir(config_file='config.yml')

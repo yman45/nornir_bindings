@@ -36,3 +36,17 @@ class IPAddress:
         if self.primary:
             view += ' (P)'
         return view
+
+
+class BGPNeighbor:
+    def __init__(self, address):
+        self.address = ipaddress.ip_address(address)
+        self.af = {'ipv4': None, 'ipv6': None}
+
+
+class AddressFamily:
+    def __init__(self, af_type):
+        if af_type == 'v4' or af_type == 'v6':
+            self.af_type = 'ip{} unicast'.format(af_type)
+        else:
+            self.af_type = af_type
