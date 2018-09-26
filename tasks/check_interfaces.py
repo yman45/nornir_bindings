@@ -5,6 +5,13 @@ from utils.switch_objects import SwitchInterface, IPAddress
 
 
 def cisco_compact_name(int_name):
+    '''Convert Cisco full interface name into abbreviated form used, for
+    example, in 'show interface brief' output
+    Arguments:
+        * int_name - full interface name
+    Returns:
+        * abbreviated interface name
+    '''
     if 'Ethernet' in int_name:
         return 'Eth'+int_name[8:]
     elif 'port-channel' in int_name:
@@ -14,6 +21,18 @@ def cisco_compact_name(int_name):
 
 
 def check_interfaces_status(task, interface_list=None):
+    '''Nornir task to get switch interfaces administrative and operational
+    status. If interface list is provided, new list of
+    utils.switch_objects.SwitchInterface will be generated and assigned to
+    task.host['interfaces'], so existed ones would be dropped. Otherwise
+    existed list in task.host['interfaces'] would be used.
+    Arguments:
+        * task - instance or nornir.core.task.Task
+        * interface_list (defaults to None) - list of strings, which represents
+            switch interface names
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
     if interface_list:
         task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
     connection = task.host.get_connection('netmiko')
@@ -60,6 +79,18 @@ def check_interfaces_status(task, interface_list=None):
 
 
 def get_interfaces_ip_addresses(task, interface_list=None):
+    '''Nornir task to get switch interfaces IP addresses (both IPv4 and IPv6).
+    If interface list is provided, new list of
+    utils.switch_objects.SwitchInterface will be generated and assigned to
+    task.host['interfaces'], so existed ones would be dropped. Otherwise
+    existed list in task.host['interfaces'] would be used.
+    Arguments:
+        * task - instance or nornir.core.task.Task
+        * interface_list (defaults to None) - list of strings, which represents
+            switch interface names
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
     if interface_list:
         task.host['interfaces'] = [SwitchInterface(
             x, mode='routed') for x in interface_list]
@@ -142,6 +173,18 @@ def get_interfaces_ip_addresses(task, interface_list=None):
 
 
 def get_interfaces_ip_neighbors(task, interface_list=None):
+    '''Nornir task to get switch interfaces IP neighbors (both IPv4 (ARP) and
+    IPv6 (NDP)). If interface list is provided, new list of
+    utils.switch_objects.SwitchInterface will be generated and assigned to
+    task.host['interfaces'], so existed ones would be dropped. Otherwise
+    existed list in task.host['interfaces'] would be used.
+    Arguments:
+        * task - instance or nornir.core.task.Task
+        * interface_list (defaults to None) - list of strings, which represents
+            switch interface names
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
     if interface_list:
         task.host['interfaces'] = [SwitchInterface(
             x, mode='routed') for x in interface_list]

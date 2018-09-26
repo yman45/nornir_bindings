@@ -5,7 +5,27 @@ from utils.switch_objects import SwitchInterface
 
 
 def get_interfaces_macs(task, interface_list=None):
+    '''Nornir task to get MAC addresses learned on switch interfaces. If
+    interface list is provided, new list of
+    utils.switch_objects.SwitchInterface will be generated and assigned to
+    task.host['interfaces'], so existed ones would be dropped. Otherwise
+    existed list in task.host['interfaces'].
+    Arguments:
+        * task - instance or nornir.core.task.Task
+        * interface_list (defaults to None) - list of strings, which represents
+            switch interface names
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
     def count_macs(nos, mac_table):
+        '''Grab number of MACs from output, in case of NX-OS we must count
+        lines, for VRPv8 we can found number listed.
+        Arguments:
+            * nos - NOS name
+            * mac_table - CLI output with MAC table
+        Returns:
+            * number of MACs in table
+        '''
         if nos == 'nxos':
             delimeter = mac_table.find('---')
             # Cisco returns empty output if no MACs learned

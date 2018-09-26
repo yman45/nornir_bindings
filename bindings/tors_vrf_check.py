@@ -8,6 +8,16 @@ from app_exception import UnsupportedNOS
 
 
 def check_vrf(task, vrf_name):
+    '''Nornir task that execute different subtasks to get an high level
+    overview of VRF operational state on a ToR switch. Criterias for final
+    rating are opinionated. In theory task may run well on other types of
+    switches.
+    Arguments:
+        * task - instance of nornir.core.task.Task
+        * vrf_name - name of VRF to check for
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
     with open('tasks/vendor_vars.json', 'r', encoding='utf-8') as jsonf:
         vendor_vars = json.load(jsonf)
     if task.host['nornir_nos'] == 'nxos':
@@ -88,9 +98,12 @@ def check_vrf(task, vrf_name):
     return Result(task.host, result=result)
 
 
-nrnr = InitNornir(config_file='config.yml')
-nornir_set_credentials(nrnr)
-vrf_name = input('Enter VRF name > ')
-result = nrnr.run(task=check_vrf, vrf_name=vrf_name)
-for host in result:
-    print_result(result[host][0])
+if __name__ == '__main__':
+    # grab hosts from inventory, execute binding and print out only topmost
+    # (umbrella task) results
+    nrnr = InitNornir(config_file='config.yml')
+    nornir_set_credentials(nrnr)
+    vrf_name = input('Enter VRF name > ')
+    result = nrnr.run(task=check_vrf, vrf_name=vrf_name)
+    for host in result:
+        print_result(result[host][0])

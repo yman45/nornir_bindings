@@ -6,6 +6,14 @@ from utils.switch_objects import SwitchInterface, BGPNeighbor, AddressFamily
 
 
 def find_vrf(task):
+    '''Nornir task to detect if VRF exists on a switch. Task will fail if no
+    VRF found, which prevents other tasks on same host from being executed. VRF
+    name contained in task.host['vrf_name'].
+    Arguments:
+        * task - instance or nornir.core.task.Task
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
     connection = task.host.get_connection('netmiko')
     output = connection.send_command(task.host['vendor_vars']['show vrf'])
     if not re.search(task.host['vendor_vars']['vrf regexp'].format(
@@ -20,6 +28,14 @@ def find_vrf(task):
 
 
 def get_vrf_interfaces(task):
+    '''Nornir task to grab all interfaces assigned to VRF on a switch. It will
+    create list of utils.switch_objects.SwitchInterface and assign it to
+    task.host['interfaces'].
+    Arguments:
+        * task - instance or nornir.core.task.Task
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
     connection = task.host.get_connection('netmiko')
     output = connection.send_command(
             task.host['vendor_vars']['show vrf interfaces'].format(
@@ -52,7 +68,26 @@ def get_vrf_interfaces(task):
 
 
 def check_vrf_bgp_neighbors(task, af='both'):
+    '''Nornir task to check state of BGP sessions with neighbors and grab they
+    essintial parameters (ASN, session type, routed ID and number of prefixes
+    learned for IPv4 unicast and/or IPv6 unicast.
+    Arguments:
+        * task - instance or nornir.core.task.Task
+        * af (defaults to 'both') - which AF we are interested in: both, v4 or
+            v6
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
     def get_n_record(host, raw_address):
+        '''Check if utils.switch_objects.BGPNeighbor instance already exist in
+        task.host['bgp_neighbors'] and grab it. If not create new and assign to
+        that list.
+        Arguments:
+            * host - instance or nornir.core.task.Host
+            * raw_address - string, which represents neighbor IP address
+        Returns:
+            * instance of utils.switch_objects.BGPNeighbor
+        '''
         address = ipaddress.ip_address(raw_address).compressed
         if address not in host['bgp_neighbors'].keys():
             neighbor = BGPNeighbor(raw_address)

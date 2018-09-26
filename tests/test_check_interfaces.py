@@ -4,6 +4,13 @@ from utils.switch_objects import SwitchInterface
 
 
 def interface_name_to_file_name(name):
+    '''Translate interface name for using into file names replacing different
+    symbols with '_'.
+    Arguments:
+        * name - interface name
+    Returns:
+        * translated name
+    '''
     trans_dict = {ord(':'): '_',
                   ord('/'): '_',
                   ord('.'): '_',
@@ -12,11 +19,28 @@ def interface_name_to_file_name(name):
 
 
 def prepare_interfaces(fake_task, interface_list):
+    '''Generate and assign list of utils.switch_objects.SwitchInterface to
+    task.host['interfaces'] and returns that list.
+    Arguments:
+        * fake_task - nornir.core.task.Task with mocked internals
+        * interface_list - list of interface names
+    Returns:
+        * list of utils.switch_objects.SwitchInterface
+    '''
     fake_task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
     return [x for x in fake_task.host['interfaces']]
 
 
 def get_ip_outputs(interfaces, vendor, pad=''):
+    '''Get different file contents for commands that imply both IPv4 and IPv6
+    for list of interfaces. Little helper to open up different files.
+    Arguments:
+        * interfaces - list of interface names
+        * vendor - lower case vendor name to use in file names
+        * pad (defaults to '') - additional field to insert into file name
+    Returns:
+        * list of file contents outputs
+    '''
     outputs = []
     for interface in interfaces:
         name = interface_name_to_file_name(interface)
