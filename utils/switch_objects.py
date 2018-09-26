@@ -50,3 +50,5 @@ class AddressFamily:
             self.af_type = 'ip{} unicast'.format(af_type)
         else:
             self.af_type = af_type
+        self.learned_routes = 0
+        self.sent_routes = 0
