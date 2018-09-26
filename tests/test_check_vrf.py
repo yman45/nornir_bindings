@@ -42,8 +42,9 @@ def test_get_vrf_interfaces(set_vendor_vars):
     task_cisco_no_int = create_fake_task(
             cisco_output_interfaces_false, vendor_vars['Cisco Nexus'],
             'Star', 'nxos', check_vrf_status.get_vrf_interfaces)
-    check_vrf_status.get_vrf_interfaces(task_cisco_no_int)
+    result = check_vrf_status.get_vrf_interfaces(task_cisco_no_int)
     assert len(task_cisco_no_int.host['interfaces']) == 0
+    assert result.failed is True
     huawei_output_interfaces_true = get_file_contents(
             'huawei_vrf_interfaces_present.txt')
     task_huawei_yes_int = create_fake_task(
@@ -56,8 +57,9 @@ def test_get_vrf_interfaces(set_vendor_vars):
     task_huawei_no_int = create_fake_task(
             huawei_output_interfaces_false, vendor_vars['Huawei CE'],
             'Star', 'huawei_vrpv8', check_vrf_status.get_vrf_interfaces)
-    check_vrf_status.get_vrf_interfaces(task_huawei_no_int)
+    result = check_vrf_status.get_vrf_interfaces(task_huawei_no_int)
     assert len(task_huawei_no_int.host['interfaces']) == 0
+    assert result.failed is True
     task_huawei_no_int.host['nornir_nos'] = 'eos'
     with pytest.raises(UnsupportedNOS):
         check_vrf_status.get_vrf_interfaces(task_huawei_no_int)

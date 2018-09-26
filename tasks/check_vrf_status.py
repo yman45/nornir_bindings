@@ -30,7 +30,8 @@ def find_vrf(task):
 def get_vrf_interfaces(task):
     '''Nornir task to grab all interfaces assigned to VRF on a switch. It will
     create list of utils.switch_objects.SwitchInterface and assign it to
-    task.host['interfaces'].
+    task.host['interfaces']. Task will fail if there are no interfaces assigned
+    to VRF, precluding other tasks run on that host.
     Arguments:
         * task - instance or nornir.core.task.Task
     Returns:
@@ -61,7 +62,12 @@ def get_vrf_interfaces(task):
                 'task received unsupported NOS - {}'.format(
                     task.host['nornir_nos']))
     task.host['interfaces'] = interfaces_list
-    return Result(
+    if len(task.host['interfaces']) == 0:
+        return Result(host=task.host, failed=True,
+                      result='No interfaces assigned to VRF {}'.format(
+                          task.host['vrf_name']))
+    else:
+        return Result(
             host=task.host, result='Interfaces bound to VRF {}:\n\t{}'.format(
                 task.host['vrf_name'], '\n\t'.join(
                     [x.name for x in interfaces_list])))
