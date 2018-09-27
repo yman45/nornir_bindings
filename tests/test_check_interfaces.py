@@ -1,5 +1,5 @@
 from tests.helpers import create_fake_task, get_file_contents
-from tasks import check_interfaces
+from operations import check_interfaces
 from utils.switch_objects import SwitchInterface
 
 

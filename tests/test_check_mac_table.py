@@ -1,6 +1,6 @@
 from tests.helpers import create_fake_task, get_file_contents
 from utils.switch_objects import SwitchInterface
-from tasks import check_mac_table
+from operations import check_mac_table
 
 
 def test_get_interfaces_macs(set_vendor_vars):

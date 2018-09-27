@@ -1,6 +1,6 @@
 import pytest
 from tests.helpers import create_fake_task, get_file_contents
-from tasks import check_vrf_status
+from operations import check_vrf_status
 from app_exception import UnsupportedNOS
 
 
