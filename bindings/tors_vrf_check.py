@@ -18,7 +18,7 @@ def check_vrf(task, vrf_name):
     Returns:
         * instance of nornir.core.task.Result
     '''
-    with open('tasks/vendor_vars.json', 'r', encoding='utf-8') as jsonf:
+    with open('operations/vendor_vars.json', 'r', encoding='utf-8') as jsonf:
         vendor_vars = json.load(jsonf)
     if task.host['nornir_nos'] == 'nxos':
         task.host['vendor_vars'] = vendor_vars['Cisco Nexus']
