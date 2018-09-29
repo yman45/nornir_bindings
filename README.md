@@ -23,6 +23,11 @@ More information
 
 Currently more information can be find in function docstrings.
 
+Compatibilty
+------------
+
+All code is targeted Cisco NX-OS 6 and Huawei VRPv8 V200 if not stated otherwise.
+
 Requirements
 ------------
 
