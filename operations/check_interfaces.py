@@ -73,7 +73,7 @@ def check_interfaces_status(task, interface_list=None):
         else:
             raise UnsupportedNOS('task received unsupported NOS - {}'.format(
                 task.host['nornir_nos']))
-        result += 'Interface {} is in {}/{} state\n'.format(
+        result += '\tInterface {} is in {}/{} state\n'.format(
                 interface.name, interface.admin_status, interface.oper_status)
     return Result(host=task.host, result=result)
 
