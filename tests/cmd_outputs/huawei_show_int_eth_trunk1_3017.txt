@@ -1,0 +1,14 @@
+Eth-Trunk1.3017 current state : UP (ifindex: 154)
+Line protocol current state : DOWN 
+Description: 
+Route Port,Hash Arithmetic : profile default, Maximal BW : 40Gbps, Current BW : 40Gbps, The Maximum Transmit Unit is 1500
+Internet protocol processing : disabled
+IP Sending Frames' Format is PKTFMT_ETHNT_2, Hardware address is 30d1-7ee3-f961
+Current system time: 2018-11-20 07:31:31+03:00
+----------------------------------------------------------
+PortName                      Status              Weight   
+----------------------------------------------------------
+40GE1/0/17                    UP                  1        
+----------------------------------------------------------
+The Number of Ports in Trunk : 1
+The Number of Up Ports in Trunk : 1

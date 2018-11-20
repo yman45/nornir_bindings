@@ -1,0 +1,10 @@
+Vlanif761 current state : UP (ifindex: 139)
+Line protocol current state : DOWN 
+Description: 
+Route Port,The Maximum Transmit Unit is 9000, The Holdoff Timer is 20(sec)
+Internet protocol processing : disabled
+IP Sending Frames' Format is PKTFMT_ETHNT_2, Hardware address is 30d1-7ee3-f967
+Physical is VLANIF
+Current system time: 2018-11-20 07:31:41+03:00
+    Input bandwidth utilization  : --
+    Output bandwidth utilization : --

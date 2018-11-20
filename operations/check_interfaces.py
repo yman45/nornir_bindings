@@ -228,3 +228,47 @@ def get_interfaces_ip_neighbors(task, interface_list=None):
         result += 'IPv4 neighbors: {}; IPv6 neighbors: {}\n'.format(
                 interface.ipv4_neighbors, interface.ipv6_neighbors)
     return Result(host=task.host, result=result)
+
+
+def get_interfaces_mode(task, interface_list=None):
+    if interface_list:
+        task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
+    connection = task.host.get_connection('netmiko')
+    result = 'Interface mode:\n'
+    if task.host['nornir_nos'] == 'nxos':
+        interfaces_brief_output = connection.send_command(task.host[
+            'vendor_vars']['show interfaces brief'])
+    for interface in task.host['interfaces']:
+        if interface.svi or interface.subinterface:
+            result += 'Interface {} mode: routed (by interface type)'.format(
+                    interface.name)
+            continue
+        if task.host['nornir_nos'] == 'nxos':
+            interface_name = cisco_compact_name(interface.name)
+            brief_line_start = interfaces_brief_output.index(interface_name)
+            # 'find' will cover end of output (last line) situations
+            brief_line_end = interfaces_brief_output.find('\n',
+                                                          brief_line_start)
+            brief_line = interfaces_brief_output[
+                    brief_line_start:brief_line_end]
+            if 'routed' in brief_line:
+                interface.mode = 'routed'
+            elif 'trunk' in brief_line or 'access' in brief_line:
+                interface.mode = 'switched'
+            else:
+                raise ValueError('Can not determine interface {} mode'.format(
+                    interface.name))
+        elif task.host['nornir_nos'] == 'huawei_vrpv8':
+            interface_full_output = connection.send_command(task.host[
+                'vendor_vars']['show interface'].format(interface.name))
+            if 'Switch Port' in interface_full_output:
+                interface.mode = 'switched'
+            elif 'Route Port' in interface_full_output:
+                interface.mode = 'routed'
+            else:
+                raise ValueError('Can not determine interface {} mode'.format(
+                    interface.name))
+        else:
+            raise UnsupportedNOS('task received unsupported NOS - {}'.format(
+                task.host['nornir_nos']))
+    return Result(host=task.host, result=result)

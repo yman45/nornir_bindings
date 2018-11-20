@@ -1,0 +1,44 @@
+40GE1/0/2:1 current state : UP (ifindex: 42)
+Line protocol current state : UP 
+Description: \
+Switch Port, PVID :  604, TPID : 8100(Hex), The Maximum Frame Length is 9712
+Internet protocol processing : disabled
+IP Sending Frames' Format is PKTFMT_ETHNT_2, Hardware address is 30d1-7ee3-f961
+Port Mode:    COMMON COPPER,     Port Split/Aggregate:          ENABLE
+Speed:                10000,     Loopback:                        NONE
+Duplex:                FULL,     Negotiation:                  DISABLE
+Input Flow-control: DISABLE,     Output Flow-control:          DISABLE
+Mdi:                   AUTO,     Fec:                             NONE
+Last physical up time   : 2018-04-11 09:13:08+03:00
+Last physical down time : 2018-04-11 09:13:04+03:00
+Current system time: 2018-11-20 07:30:07+03:00
+Statistics last cleared:never
+    Last 300 seconds input rate: 142956141 bits/sec, 5646 packets/sec
+    Last 300 seconds output rate: 116980209 bits/sec, 5353 packets/sec
+    Input peak rate 2255669382 bits/sec, Record time: 2018-08-17 17:01:20+03:00
+    Output peak rate 2170498126 bits/sec, Record time: 2018-05-21 16:31:05+03:00
+    Input :    808912808642057 bytes,       206083157732 packets
+    Output:    662464544885809 bytes,       190900214842 packets
+    Input: 
+      Unicast:            92718291999,   Multicast:                 1003340
+      Broadcast:                    0,   Jumbo:                113363862393
+      Discard:                      0,   Frames:                          0
+      Pause:                        0
+      
+      Total Error:                  0
+      CRC:                          0,   Giants:                          0
+      Jabbers:                      0,   Fragments:                       0
+      Runts:                        0,   DropEvents:                      0
+      Alignments:                   0,   Symbols:                         0
+      Ignoreds:                     0
+   
+    Output:
+      Unicast:            98378729634,   Multicast:                85785066
+      Broadcast:                  141,   Jumbo:                 92435700001
+      Discard:                5666692,   Buffers Purged:                  0
+      Pause:                        0
+
+    Input bandwidth utilization threshold : 90.00%
+    Output bandwidth utilization threshold: 90.00%
+    Last 300 seconds input utility rate:  1.42%
+    Last 300 seconds output utility rate: 1.16%

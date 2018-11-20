@@ -14,6 +14,7 @@ class SwitchInterface:
             __init__ (default to 'switched')
         * svi - boolean to indicate if this interface is SVI
         * subinterface - boolean to indicate if this interface is subinterface
+        * lag - boolean to indicate if this is interface is LAG
     '''
     def __init__(self, name, mode='switched'):
         self.name = name
@@ -30,6 +31,11 @@ class SwitchInterface:
             self.mode = 'routed'
         else:
             self.subinterface = False
+        if self.name.startswith(('port-channel',
+                                 'Eth-Trunk')) and '.' not in self.name:
+            self.lag = True
+        else:
+            self.lag = False
 
     def __str__(self):
         return self.name

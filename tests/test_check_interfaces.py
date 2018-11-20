@@ -193,3 +193,39 @@ def test_get_interfaces_ip_neighbors(set_vendor_vars):
     assert int_100ge1_0_2_3000.ipv6_neighbors == 3
     assert int_vlanif761.ipv4_neighbors == 0
     assert int_vlanif761.ipv6_neighbors == 0
+
+
+def test_get_interfaces_mode(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    cisco_interface_names = [
+            'Ethernet1/22/1', 'Ethernet1/23/2', 'Ethernet1/25',
+            'port-channel1.3000', 'port-channel2', 'Vlan604']
+    cisco_task = create_fake_task(get_file_contents(
+        'cisco_show_int_brief.txt'), vendor_vars['Cisco Nexus'], None, 'nxos',
+        check_interfaces.get_interfaces_mode)
+    (eth1_22_1_int, eth1_23_2_int, eth1_25_int, po1_3000_int, po2_int,
+        vlan604_int) = prepare_interfaces(cisco_task, cisco_interface_names)
+    check_interfaces.get_interfaces_mode(cisco_task)
+    assert eth1_22_1_int.mode == 'switched'
+    assert eth1_23_2_int.mode == 'switched'
+    assert eth1_25_int.mode == 'routed'
+    assert po1_3000_int.mode == 'routed'
+    assert po2_int.mode == 'routed'
+    assert vlan604_int.mode == 'routed'
+    huawei_interface_names = [
+             '40GE1/0/17', '40GE1/0/2:1', 'Eth-Trunk1.3017', 'Vlanif761']
+    outputs = []
+    for interface in huawei_interface_names:
+        name = interface_name_to_file_name(interface)
+        file_name = 'huawei_show_int_' + name + '.txt'
+        outputs.append(get_file_contents(file_name))
+    huawei_task = create_fake_task(
+            None, vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
+            check_interfaces.get_interfaces_mode, effect=outputs)
+    int_40ge1_0_17, int_40ge1_0_2_1, int_eth_trunk1_3017, int_vlanif761 = \
+        prepare_interfaces(huawei_task, huawei_interface_names)
+    check_interfaces.get_interfaces_mode(huawei_task)
+    assert int_40ge1_0_17.mode == 'routed'
+    assert int_40ge1_0_2_1.mode == 'switched'
+    assert int_eth_trunk1_3017.mode == 'routed'
+    assert int_vlanif761.mode == 'routed'

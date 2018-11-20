@@ -1,0 +1,43 @@
+40GE1/0/17 current state : UP (ifindex: 21)
+Line protocol current state : UP 
+Description: spine13-1r2 40ge3/0/30
+Route Port,The Maximum Transmit Unit is 1500,The Maximum Frame Length is 9712
+IP Sending Frames' Format is PKTFMT_ETHNT_2, Hardware address is 30d1-7ee3-f961
+Port Mode:     COMMON FIBER,     Port Split/Aggregate:         DISABLE
+Speed:                40000,     Loopback:                        NONE
+Duplex:                FULL,     Negotiation:                  DISABLE
+Input Flow-control: DISABLE,     Output Flow-control:          DISABLE
+Mdi:                      -,     Fec:                             NONE
+Last physical up time   : 2018-10-03 19:48:10+03:00
+Last physical down time : 2018-10-03 19:23:27+03:00
+Current system time: 2018-11-20 07:20:32+03:00
+Statistics last cleared:never
+    Last 300 seconds input rate: 2320930861 bits/sec, 97792 packets/sec
+    Last 300 seconds output rate: 2526879899 bits/sec, 95724 packets/sec
+    Input peak rate 23301047628 bits/sec, Record time: 2017-12-24 02:41:10+03:00
+    Output peak rate 22066511043 bits/sec, Record time: 2018-02-16 18:49:34+03:00
+    Input :  16435462734682450 bytes,      5033610266856 packets
+    Output:  15124809967311762 bytes,      4925925147609 packets
+    Input: 
+      Unicast:          2816880613580,   Multicast:              1476317616
+      Broadcast:                    0,   Jumbo:               2215253335660
+      Discard:                      0,   Frames:                          0
+      Pause:                        0
+      
+      Total Error:                  0
+      CRC:                          0,   Giants:                          0
+      Jabbers:                      0,   Fragments:                       0
+      Runts:                        0,   DropEvents:                      0
+      Alignments:                   0,   Symbols:                         0
+      Ignoreds:                     0
+   
+    Output:
+      Unicast:          2825642083501,   Multicast:                33096920
+      Broadcast:                    0,   Jumbo:               2100249967188
+      Discard:                 525943,   Buffers Purged:                  0
+      Pause:                        0
+
+    Input bandwidth utilization threshold : 90.00%
+    Output bandwidth utilization threshold: 90.00%
+    Last 300 seconds input utility rate:  5.80%
+    Last 300 seconds output utility rate: 6.31%
