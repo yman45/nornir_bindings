@@ -50,10 +50,10 @@ def check_switch_interfaces(task, interface_names):
 
 
 if __name__ == '__main__':
-    # grab hosts from inventory, execute operations and print out only topmost
-    # (umbrella operation) results
+    # grab one host from inventory, execute operations and print out only
+    # topmost (umbrella operation) results
     nrnr = InitNornir(config_file='config.yml')
-    nrnr = nrnr.filter(name='man1-s305')
+    nrnr = nrnr.filter(name='test-host')
     nornir_set_credentials(nrnr)
     interface_names = input('Enter interface names > ')
     interface_list = interface_names.split(', ')

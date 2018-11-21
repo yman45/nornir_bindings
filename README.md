@@ -8,6 +8,8 @@ Bindings
 
  * tors\_vrf\_check - check different aspects of VRF status on a switch (written for ToR switches)
     and prints out assumption on its operability; works on full inventory
+ * switch\_interfaces\_check - gather different states and characteristics of
+   interfaces on a host
 
 Operations
 ----------
