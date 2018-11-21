@@ -20,6 +20,39 @@ def cisco_compact_name(int_name):
         return int_name
 
 
+def convert_mac_address(mac_address):
+    '''Convert Cisco and Huawei notation MAC addresses into standard(?)
+    representation with colons. Plus lowering case.
+    Arguments:
+        * mac_address - MAC address in Cisco or Huawei notation
+    Returns:
+        * MAC address in standard notation
+    '''
+    mac_address = mac_address.lower()
+    if not re.match(r'^[a-f0-9]{4}(.|-)[a-f0-9]{4}(.|-)[a-f0-9]{4}$',
+                    mac_address):
+        raise ValueError('Unsupported or invalid MAC address format')
+    mac_address = (mac_address[:2] + ':' + mac_address[2:4] + ':' +
+                   mac_address[5:7] + ':' + mac_address[7:9] + ':' +
+                   mac_address[10:12] + ':' + mac_address[12:])
+    return mac_address
+
+
+def convert_load(load_in_bits_second):
+    '''Convert bits/second to gigabits/second. If result less that 0.001 (one
+    megabit per second) set it to that value.
+    Arguments:
+        * load_in_bits_second - string describing current load in bits/sec
+    Return:
+        float rounded to 3rd digit describing loag in gigabits/sec
+    '''
+    if load_in_bits_second == '0':
+        return float(load_in_bits_second)
+    result = round(float(load_in_bits_second)/1000000000, 3)
+    result = result if result >= 0.001 else 0.001
+    return result
+
+
 def check_interfaces_status(task, interface_list=None):
     '''Nornir task to get switch interfaces administrative and operational
     status. If interface list is provided, new list of
@@ -231,10 +264,22 @@ def get_interfaces_ip_neighbors(task, interface_list=None):
 
 
 def get_interfaces_mode(task, interface_list=None):
+    '''Nornir task to get switch interfaces mode of operation, which can be
+    either routed (L3) or switched (L2). If interface list is provided, new
+    list of utils.switch_objects.SwitchInterface will be generated and assigned
+    to task.host['interfaces'], so existed ones would be dropped. Otherwise
+    existed list in task.host['interfaces'] would be used.
+    Arguments:
+        * task - instance or nornir.core.task.Task
+        * interface_list (defaults to None) - list of strings, which represents
+            switch interface names
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
     if interface_list:
         task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
     connection = task.host.get_connection('netmiko')
-    result = 'Interface mode:\n'
+    result = 'Interfaces mode:\n'
     if task.host['nornir_nos'] == 'nxos':
         interfaces_brief_output = connection.send_command(task.host[
             'vendor_vars']['show interfaces brief'])
@@ -271,4 +316,96 @@ def get_interfaces_mode(task, interface_list=None):
         else:
             raise UnsupportedNOS('task received unsupported NOS - {}'.format(
                 task.host['nornir_nos']))
+        result += '\tInterface {} mode: {}'.format(interface.name,
+                                                   interface.mode)
+    return Result(host=task.host, result=result)
+
+
+def get_interfaces_general_info(task, interface_list=None):
+    '''Nornir task to get switch interfaces general information like speed,
+    description, MAC address, etc. If interface list is provided, new list of
+    utils.switch_objects.SwitchInterface will be generated and assigned to
+    task.host['interfaces'], so existed ones would be dropped. Otherwise
+    existed list in task.host['interfaces'] would be used.
+    Arguments:
+        * task - instance or nornir.core.task.Task
+        * interface_list (defaults to None) - list of strings, which represents
+            switch interface names
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
+    if interface_list:
+        task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
+    connection = task.host.get_connection('netmiko')
+    result = 'Interfaces characteristics:\n'
+    for interface in task.host['interfaces']:
+        interface_full_output = connection.send_command(
+                task.host['vendor_vars']['show interface'].format(
+                    interface.name))
+        if task.host['nornir_nos'] == 'nxos':
+            if 'Description:' not in interface_full_output:
+                interface.description = None
+            else:
+                interface.description = re.search(
+                    r'Description: (.+)\n', interface_full_output).group(1)
+            interface.mac_address = convert_mac_address(re.search(
+                r'address(?:: | is\s+)([a-z0-9.]+)\s',
+                interface_full_output).group(1))
+            interface.mtu = int(re.search(r'MTU (\d{4}) bytes',
+                                          interface_full_output).group(1))
+            if interface.svi or interface.subinterface:
+                # SVIs and subinterface doesn't have speed, duplex or load
+                (interface.speed, interface.duplex, interface.load_in,
+                    interface.load_out) = (None, None, None, None)
+                continue
+            speed_and_duplex = re.search(r'(full|half)-duplex, (\d{1,3}) Gb/s',
+                                         interface_full_output)
+            interface.duplex = speed_and_duplex.group(1)
+            interface.speed = int(speed_and_duplex.group(2))
+            interface.load_in = convert_load(re.search(
+                r'input rate (\d+) bits/sec,', interface_full_output).group(1))
+            interface.load_out = convert_load(re.search(
+                r'output rate (\d+) bits/sec,',
+                interface_full_output).group(1))
+        elif task.host['nornir_nos'] == 'huawei_vrpv8':
+            descr = re.search(r'Description: (.+)\n', interface_full_output)
+            interface.description = descr.group(1) if descr else None
+            interface.mac_address = convert_mac_address(re.search(
+                r'Hardware address is ([a-z0-9-]+)\s',
+                interface_full_output).group(1))
+            interface.mtu = int(re.search(
+                r'Maximum (?:Transmit Unit|Frame Length) is (\d{4})',
+                interface_full_output).group(1))
+            if interface.svi or interface.subinterface:
+                # SVIs and subinterface doesn't have speed, duplex or load
+                (interface.speed, interface.duplex, interface.load_in,
+                    interface.load_out) = (None, None, None, None)
+                continue
+            if interface.lag:
+                interface.duplex = 'full'
+                interface.speed = int(re.search(
+                    r'Current BW : (\d+)Gbps,',
+                    interface_full_output).group(1))
+            else:
+                interface.duplex = re.search(
+                        r'Duplex:\s+(FULL|HALF),',
+                        interface_full_output).group(1).lower()
+                interface.speed = int(re.search(
+                        r'Speed:\s+(\d+),',
+                        interface_full_output).group(1))/1000
+            interface.load_in = convert_load(re.search(
+                r'input rate:? (\d+) bits/sec,',
+                interface_full_output).group(1))
+            interface.load_out = convert_load(re.search(
+                r'output rate:? (\d+) bits/sec,',
+                interface_full_output).group(1))
+        else:
+            raise UnsupportedNOS('task received unsupported NOS - {}'.format(
+                task.host['nornir_nos']))
+        result += '\tInterface {} / {}: MAC address {}, MTU {} bytes,'.format(
+                interface.name, interface.description, interface.mac_address,
+                interface.mtu)
+        result += '\t\t{} Gb/s, {} duplex, {}/{} in/out Gb/s load\n'.format(
+                interface.speed, interface.duplex, interface.load_in,
+                interface.load_out)
     return Result(host=task.host, result=result)

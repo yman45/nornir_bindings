@@ -1,3 +1,4 @@
+import pytest
 from tests.helpers import create_fake_task, get_file_contents
 from operations import check_interfaces
 from utils.switch_objects import SwitchInterface
@@ -48,6 +49,21 @@ def get_ip_outputs(interfaces, vendor, pad=''):
             '4', '6')]
         outputs.extend([get_file_contents(x) for x in file_names])
     return outputs
+
+
+def test_convert_mac_address():
+    with pytest.raises(ValueError):
+        check_interfaces.convert_mac_address('bc3f.0a2b.16')
+    with pytest.raises(ValueError):
+        check_interfaces.convert_mac_address('bc3f.0a2b.167254')
+    with pytest.raises(ValueError):
+        check_interfaces.convert_mac_address('bc3f.0axb.1672')
+    assert check_interfaces.convert_mac_address(
+            'bc3f.0a2b.1672') == 'bc:3f:0a:2b:16:72'
+    assert check_interfaces.convert_mac_address(
+            'bc3f-0a2b-1672') == 'bc:3f:0a:2b:16:72'
+    assert check_interfaces.convert_mac_address(
+            'bc3F-0a2B-1672') == 'bc:3f:0a:2b:16:72'
 
 
 def test_check_interfaces_status(set_vendor_vars):
@@ -229,3 +245,90 @@ def test_get_interfaces_mode(set_vendor_vars):
     assert int_40ge1_0_2_1.mode == 'switched'
     assert int_eth_trunk1_3017.mode == 'routed'
     assert int_vlanif761.mode == 'routed'
+
+
+def test_get_interfaces_general_info(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    cisco_interface_names = [
+            'Ethernet1/3/1', 'Ethernet1/31.3000', 'port-channel2', 'Vlan741']
+    outputs = []
+    for interface in cisco_interface_names:
+        name = interface_name_to_file_name(interface)
+        file_name = 'cisco_show_int_' + name + '.txt'
+        outputs.append(get_file_contents(file_name))
+    cisco_task = create_fake_task(
+            None, vendor_vars['Cisco Nexus'], None, 'nxos',
+            check_interfaces.get_interfaces_general_info, effect=outputs)
+    eth1_3_1_int, eth1_31_3000_int, po2_int, vlan741_int = prepare_interfaces(
+            cisco_task, cisco_interface_names)
+    check_interfaces.get_interfaces_general_info(cisco_task)
+    assert eth1_3_1_int.description is None
+    assert eth1_3_1_int.mac_address == '74:a0:2f:4c:b6:50'
+    assert eth1_3_1_int.mtu == 1500
+    assert eth1_3_1_int.speed == 10
+    assert eth1_3_1_int.duplex == 'full'
+    assert eth1_3_1_int.load_in == 0.005
+    assert eth1_3_1_int.load_out == 0.016
+    assert eth1_31_3000_int.description is None
+    assert eth1_31_3000_int.mac_address == '88:1d:fc:ef:48:3c'
+    assert eth1_31_3000_int.mtu == 9000
+    assert eth1_31_3000_int.speed is None
+    assert eth1_31_3000_int.duplex is None
+    assert eth1_31_3000_int.load_in is None
+    assert eth1_31_3000_int.load_out is None
+    assert po2_int.description == 'leaf-3x4 port-channel3'
+    assert po2_int.mac_address == '74:a0:2f:4c:b6:81'
+    assert po2_int.mtu == 9000
+    assert po2_int.speed == 40
+    assert po2_int.duplex == 'full'
+    assert po2_int.load_in == 1.178
+    assert po2_int.load_out == 1.385
+    assert vlan741_int.description is None
+    assert vlan741_int.mac_address == '74:a0:2f:4c:b6:81'
+    assert vlan741_int.mtu == 9000
+    assert vlan741_int.speed is None
+    assert vlan741_int.duplex is None
+    assert vlan741_int.load_in is None
+    assert vlan741_int.load_out is None
+    huawei_interface_names = [
+            '40GE1/0/2:1', '10GE1/0/2.3013', 'Eth-Trunk0', 'Vlanif761']
+    outputs = []
+    for interface in huawei_interface_names:
+        name = interface_name_to_file_name(interface)
+        file_name = 'huawei_show_int_' + name + '.txt'
+        outputs.append(get_file_contents(file_name))
+    huawei_task = create_fake_task(
+            None, vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
+            check_interfaces.get_interfaces_general_info, effect=outputs)
+    (int_40ge1_0_2_1, int_10ge1_0_2_3013, int_eth_trunk0,
+        int_vlanif761) = prepare_interfaces(huawei_task,
+                                            cisco_interface_names)
+    check_interfaces.get_interfaces_general_info(huawei_task)
+    assert int_40ge1_0_2_1.description == '\\'
+    assert int_40ge1_0_2_1.mac_address == '30:d1:7e:e3:f9:61'
+    assert int_40ge1_0_2_1.mtu == 9712
+    assert int_40ge1_0_2_1.speed == 10
+    assert int_40ge1_0_2_1.duplex == 'full'
+    assert int_40ge1_0_2_1.load_in == 0.143
+    assert int_40ge1_0_2_1.load_out == 0.117
+    assert int_10ge1_0_2_3013.description is None
+    assert int_10ge1_0_2_3013.mac_address == 'bc:9c:31:c6:e2:c2'
+    assert int_10ge1_0_2_3013.mtu == 9000
+    assert int_10ge1_0_2_3013.speed is None
+    assert int_10ge1_0_2_3013.duplex is None
+    assert int_10ge1_0_2_3013.load_in is None
+    assert int_10ge1_0_2_3013.load_out is None
+    assert int_eth_trunk0.description is None
+    assert int_eth_trunk0.mac_address == 'ac:4e:91:46:35:91'
+    assert int_eth_trunk0.mtu == 9216
+    assert int_eth_trunk0.speed == 2
+    assert int_eth_trunk0.duplex == 'full'
+    assert int_eth_trunk0.load_in == 0.001
+    assert int_eth_trunk0.load_out == 0.001
+    assert int_vlanif761.description is None
+    assert int_vlanif761.mac_address == '30:d1:7e:e3:f9:67'
+    assert int_vlanif761.mtu == 9000
+    assert int_vlanif761.speed is None
+    assert int_vlanif761.duplex is None
+    assert int_vlanif761.load_in is None
+    assert int_vlanif761.load_out is None

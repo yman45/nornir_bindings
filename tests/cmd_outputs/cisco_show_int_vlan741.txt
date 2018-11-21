@@ -1,0 +1,4 @@
+Vlan741 is up, line protocol is up, autostate enabled
+  Hardware is EtherSVI, address is  74a0.2f4c.b681
+  MTU 9000 bytes, BW 1000000 Kbit, DLY 10 usec
+  Last clearing of "show interface" counters never

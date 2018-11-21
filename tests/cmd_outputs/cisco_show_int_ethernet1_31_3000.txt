@@ -1,0 +1,7 @@
+Ethernet1/31.3000 is up
+ Dedicated Interface 
+  Hardware: 40000 Ethernet, address: 881d.fcef.483c (bia 881d.fcef.484e)
+  MTU 9000 bytes, BW 40000000 Kbit, DLY 10 usec
+  reliability 255/255, txload 1/255, rxload 1/255
+  Encapsulation 802.1Q Virtual LAN, Vlan ID 3000
+  EtherType is 0x8100 

@@ -1,0 +1,26 @@
+Eth-Trunk0 current state : UP (ifindex: 65)
+Line protocol current state : UP 
+Description: 
+Switch Port, PVID :  562, TPID : 8100(Hex), Hash Arithmetic : src-dst-ip, Maximal BW : 2Gbps, Current BW : 2Gbps, The Maximum Frame Length is 9216
+Internet protocol processing : disabled
+IP Sending Frames' Format is PKTFMT_ETHNT_2, Hardware address is ac4e-9146-3591
+Current system time: 2018-11-21 08:09:57+03:00
+Physical is ETH_TRUNK
+    Last 300 seconds input rate 21158 bits/sec, 11 packets/sec
+    Last 300 seconds output rate 37710 bits/sec, 17 packets/sec
+    Input: 188304538 packets,49596499722 bytes
+           187187090 unicast,0 broadcast,1117446 multicast
+           0 errors,0 drops
+    Output:302009696 packets,80325981929 bytes
+           186619739 unicast,92053315 broadcast,23177070 multicast
+           0 errors,0 drops
+    Last 300 seconds input utility rate:  0.01%
+    Last 300 seconds output utility rate: 0.01%
+----------------------------------------------------------
+PortName                      Status              Weight   
+----------------------------------------------------------
+GE1/0/23                      UP                  1        
+GE1/0/24                      UP                  1        
+----------------------------------------------------------
+The Number of Ports in Trunk : 2
+The Number of Up Ports in Trunk : 2

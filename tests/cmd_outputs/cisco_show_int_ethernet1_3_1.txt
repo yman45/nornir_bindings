@@ -1,0 +1,37 @@
+Ethernet1/3/1 is up
+ Dedicated Interface 
+  Hardware: 1000/10000/40000 Ethernet, address: 74a0.2f4c.b650 (bia 74a0.2f4c.b650)
+  MTU 1500 bytes, BW 10000000 Kbit, DLY 10 usec
+  reliability 255/255, txload 1/255, rxload 1/255
+  Encapsulation ARPA
+  Port mode is trunk
+  full-duplex, 10 Gb/s, media type is 40G
+  Beacon is turned off
+  Input flow-control is off, output flow-control is off
+  Rate mode is dedicated
+  Switchport monitor is off 
+  EtherType is 0x8100 
+  Last link flapped 39week(s) 0day(s)
+  Last clearing of "show interface" counters 135w6d
+  132 interface resets
+  Load-Interval #1: 30 seconds
+  30 seconds input rate 5037664 bits/sec, 420 packets/sec
+  30 seconds output rate 15975680 bits/sec, 1412 packets/sec
+  Load-Interval #2: 5 minute (300 seconds)
+    input rate 3.77 Mbps, 197 pps; output rate 10.22 Mbps, 744 pps
+  RX
+    134288375354 unicast packets  5112805 multicast packets  88 broadcast packets
+    134294892674 input packets  259533145027310 bytes
+    35092401061 jumbo packets  0 storm suppression packets
+    0 runts  0 giants  0 CRC  0 no buffer
+    0 input error  0 short frame  0 overrun   0 underrun  0 ignored
+    0 watchdog  0 bad etype drop  0 bad proto drop  0 if down drop
+    0 input with dribble  25 input discard
+    1404427 Rx pause
+  TX
+    718025227703 unicast packets  77680332 multicast packets  0 broadcast packets
+    718102908035 output packets  1530709677130309 bytes
+    79905959172 jumbo packets
+    0 output errors  0 collision  0 deferred  0 late collision
+    0 lost carrier  0 no carrier  0 babble 8852866 output discard
+    0 Tx pause

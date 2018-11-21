@@ -1,0 +1,7 @@
+10GE1/0/2.3013 current state : UP (ifindex: 68)
+Line protocol current state : DOWN 
+Description: 
+Route Port,The Maximum Transmit Unit is 9000
+Internet protocol processing : disabled
+IP Sending Frames' Format is PKTFMT_ETHNT_2, Hardware address is bc9c-31c6-e2c2
+Current system time: 2018-11-21 08:11:18+03:00

@@ -1,0 +1,38 @@
+port-channel2 is up
+  Hardware: Port-Channel, address: 74a0.2f4c.b681 (bia 74a0.2f4c.b6ae)
+  Description: leaf-3x4 port-channel3
+  MTU 9000 bytes, BW 40000000 Kbit, DLY 10 usec
+  reliability 255/255, txload 1/255, rxload 1/255
+  Encapsulation ARPA
+  full-duplex, 40 Gb/s
+  Input flow-control is off, output flow-control is off
+  Switchport monitor is off 
+  EtherType is 0x8100 
+  Members in this channel: Eth1/31
+  Last clearing of "show interface" counters never
+  6 interface resets
+  Load-Interval #1: 30 seconds
+  30 seconds input rate 1178398200 bits/sec, 35110 packets/sec
+  30 seconds output rate 1384920752 bits/sec, 38245 packets/sec
+  Load-Interval #2: 5 minute (300 seconds)
+    input rate 1.01 Gbps, 31.75 Kpps; output rate 1.17 Gbps, 34.93 Kpps
+  L3 in Switched:
+    ucast: 0 pkts, 0 bytes - mcast: 0 pkts, 0 bytes
+  L3 out Switched:
+    ucast: 0 pkts, 0 bytes - mcast: 0 pkts, 0 bytes
+  RX
+    3360933703639 unicast packets  2488663202 multicast packets  47 broadcast packets
+    3363422366888 input packets  11098985887000993 bytes
+    1260830540695 jumbo packets  0 storm suppression packets
+    0 runts  0 giants  0 CRC  0 no buffer
+    0 input error  0 short frame  0 overrun   0 underrun  0 ignored
+    0 watchdog  0 bad etype drop  0 bad proto drop  0 if down drop
+    0 input with dribble  0 input discard
+    0 Rx pause
+  TX
+    2205685811795 unicast packets  10791269 multicast packets  0 broadcast packets
+    2205696603064 output packets  6302116017567993 bytes
+    932864739578 jumbo packets
+    0 output errors  0 collision  0 deferred  0 late collision
+    0 lost carrier  0 no carrier  0 babble 0 output discard
+    0 Tx pause
