@@ -14,7 +14,8 @@ num_workers: 10
 inventory: nornir.plugins.inventory.simple.SimpleInventory
 SimpleInventory:
   host_file: "{}"
-  group_file: "{}"'''.format(inv_hosts, inv_groups)
+  group_file: "{}"
+'''.format(inv_hosts, inv_groups)
     hosts = '''
 ---
 cisco-dc1:
@@ -26,7 +27,8 @@ huawei-dc2:
   nornir_host: 10.2.2.2
   groups:
     - dc_2
-    - huawei_tors'''
+    - huawei_tors
+'''
     groups = '''
 ---
 defaults:
@@ -49,7 +51,8 @@ huawei_tors:
     - tors
   vendor: huawei
   lineup: ce
-  nornir_nos: huawei_vrpv8'''
+  nornir_nos: huawei_vrpv8
+'''
     conf.write_text(test_config)
     inv_hosts.write_text(hosts)
     inv_groups.write_text(groups)

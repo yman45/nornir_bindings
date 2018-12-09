@@ -3,6 +3,9 @@ import ipaddress
 from yaml.scanner import ScannerError
 from ruamel.yaml import YAML
 from nornir.core import InitNornir
+from nornir.plugins.functions.text import print_result
+from utils.nornir_utils import nornir_set_credentials
+from bindings.tors_vrf_check import check_vrf
 
 
 class NoGroupsHost(Exception):
@@ -17,9 +20,10 @@ class NoGroupsHost(Exception):
 def main(config, hostname):
     if not is_in_inventory(config, hostname):
         click.echo('Host not found in inventory.')
-        click.confirm('Add it? [Y/N]', abort=True)
-        ip_addr = click.prompt('''Enter IP address to put it in config or
-        domain name to do a DNS lookup into > ''')
+        click.confirm('Add it?', abort=True)
+        txt1 = ('Enter IP address to put it in config or'
+                ' domain name to do a DNS lookup into')
+        ip_addr = click.prompt(txt1)
         try:
             host_defnintion = ipaddress.ip_address(ip_addr)
         except ValueError:
@@ -29,13 +33,20 @@ def main(config, hostname):
             except socket.gaierror:
                 click.echo('Incorrect IP address, hostname or domain')
                 exit(1)
-        click.echo('Available groups: {}'.format(get_inventory_groups(config)))
-        groups = click.prompt('''Enter groups separated by commas, spaces will
-        be stripped, unknown groups ignored, new groups creation unsuppoted >
-        ''')
+        click.echo('Available groups: {}'.format(
+            ', '.join([x for x in get_inventory_groups(config)])))
+        txt2 = ('Enter groups separated by commas, spaces will'
+                ' be stripped, unknown groups ignored, new groups creation'
+                ' unsuppoted')
+        groups = click.prompt(txt2)
         add_to_inventory(config, hostname, host_defnintion, groups)
-    else:
-        pass
+    vrf_name = click.prompt('VRF name')
+    nrnr = InitNornir(config_file='config.yml')
+    nrnr = nrnr.filter(name=hostname)
+    nornir_set_credentials(nrnr)
+    result = nrnr.run(task=check_vrf, vrf_name=vrf_name)
+    for host in result:
+        print_result(result[host][0])
 
 
 def get_inventory_groups(config):
@@ -113,7 +124,6 @@ def add_to_inventory(config, hostname, ip, groups, no_such_group_ignore=False):
     host_inventory = config_yaml['SimpleInventory']['host_file']
     yaml.indent(mapping=2, sequence=2, offset=2)
     with open(host_inventory, 'a', encoding='utf-8') as host_file:
-        host_file.write('\n')
         yaml.dump(host, host_file)
 
 
