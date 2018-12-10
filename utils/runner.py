@@ -1,17 +1,29 @@
 import os
+import os.path
 import ipaddress
 import click
 from importlib import import_module
-from yaml.scanner import ScannerError
 from ruamel.yaml import YAML
+from ruamel.yaml.scanner import ScannerError
 from nornir.core import InitNornir
 from nornir.plugins.functions.text import print_result
 from utils.nornir_utils import nornir_set_credentials
+from app_exception import AppException
 
 
-class NoGroupsHost(Exception):
+class NoGroupsHost(AppException):
     '''Exception to raise in a process of adding host into inventory if there
     are no groups configured for that host.'''
+    pass
+
+
+class ConfigNotFound(AppException):
+    '''Exception to raise if Nornir config is not founded on given path.'''
+    pass
+
+
+class CorruptedConfig(AppException):
+    '''Exception to raise if there is a problem with Nornir config.'''
     pass
 
 
@@ -24,6 +36,14 @@ def main(config, hostname):
     execute it on HOSTNAME. If HOSTNAME is not in inventory, you will be
     prompted to add it in (follow instructions in prompts).
     '''
+    try:
+        check_config(config)
+    except ConfigNotFound:
+        click.echo('Config can not be found at {}'.format(config))
+        exit(1)
+    except CorruptedConfig as e:
+        click.echo('Config error - {}'.format(e))
+        exit(1)
     if not is_in_inventory(config, hostname):
         click.echo('Host not found in inventory.')
         click.confirm('Add it?', abort=True)
@@ -86,11 +106,7 @@ def is_in_inventory(config, hostname):
     Returns:
         * True or False - is host in inventory
     '''
-    try:
-        nrnr = InitNornir(config_file=config)
-    except ScannerError:
-        click.echo('Invalid Nornir configs')
-        exit(1)
+    nrnr = InitNornir(config_file=config)
     if hostname not in nrnr.inventory.hosts.keys():
         return False
     else:
@@ -137,6 +153,26 @@ def add_to_inventory(config, hostname, ip, groups, no_such_group_ignore=False):
     yaml.indent(mapping=2, sequence=2, offset=2)
     with open(host_inventory, 'a', encoding='utf-8') as host_file:
         yaml.dump(host, host_file)
+
+
+def check_config(config):
+    '''Check Nornir config for existance and syntax. Raise exceptions if
+    problem found.
+    Arguments:
+        * config - path to Nornir config
+    Returns nothing
+    '''
+    if not os.path.isfile(config):
+        raise ConfigNotFound('No config found at {}'.format(config))
+    try:
+        yaml = YAML()
+        config = yaml.load(config)
+        host_file = config['SimpleInventory']['host_file']
+        group_file = config['SimpleInventory']['group_file']
+        yaml.load(host_file)
+        yaml.load(group_file)
+    except ScannerError as e:
+        raise CorruptedConfig('Corrupted config: {}'.format(e))
 
 
 if __name__ == '__main__':

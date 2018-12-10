@@ -1,6 +1,5 @@
 import pytest
-from utils.runner import is_in_inventory, add_to_inventory
-from utils.runner import get_inventory_groups, NoGroupsHost
+from utils import runner
 
 
 @pytest.fixture
@@ -61,29 +60,40 @@ huawei_tors:
 
 def test_is_in_inventory(tmp_inventory_files):
     config = tmp_inventory_files
-    assert is_in_inventory(config, 'cisco-dc2') is False
-    assert is_in_inventory(config, 'huawei-dc2') is True
+    assert runner.is_in_inventory(config, 'cisco-dc2') is False
+    assert runner.is_in_inventory(config, 'huawei-dc2') is True
 
 
 def test_get_inventory_groups(tmp_inventory_files):
     config = tmp_inventory_files
-    assert 'cisco_tors' in get_inventory_groups(config)
-    assert 'dc_2' in get_inventory_groups(config)
+    assert 'cisco_tors' in runner.get_inventory_groups(config)
+    assert 'dc_2' in runner.get_inventory_groups(config)
 
 
 def test_add_to_inventory(tmp_inventory_files):
     config = tmp_inventory_files
-    add_to_inventory(config, 'cisco-dc2', '10.3.3.3',
-                     'dc_2, cisco_tors')
-    assert is_in_inventory(config, 'cisco-dc2') is True
+    runner.add_to_inventory(config, 'cisco-dc2', '10.3.3.3',
+                            'dc_2, cisco_tors')
+    assert runner.is_in_inventory(config, 'cisco-dc2') is True
     with pytest.raises(ValueError):
-        add_to_inventory(config, 'cisco-dc3', '10.4.4.4.',
-                         'dc_3, cisco_tors')
-    assert add_to_inventory(
+        runner.add_to_inventory(config, 'cisco-dc3', '10.4.4.4.',
+                                'dc_3, cisco_tors')
+    assert runner.add_to_inventory(
             config, 'cisco-dc4', '10.5.5.5',
             'dc_4, cisco_tors', no_such_group_ignore=True) is None
-    with pytest.raises(NoGroupsHost):
-        add_to_inventory(config, 'huawei-dc3', '10.6.6.6', 'dc_3, hawei_tors',
-                         no_such_group_ignore=True)
-    with pytest.raises(NoGroupsHost):
-        add_to_inventory(config, 'huawei-dc4', '10.7.7.7', '')
+    with pytest.raises(runner.NoGroupsHost):
+        runner.add_to_inventory(config, 'huawei-dc3', '10.6.6.6',
+                                'dc_3, hawei_tors', no_such_group_ignore=True)
+    with pytest.raises(runner.NoGroupsHost):
+        runner.add_to_inventory(config, 'huawei-dc4', '10.7.7.7', '')
+
+
+def test_check_config(tmp_inventory_files):
+    config = 'invalid_path/config.yml'
+    with pytest.raises(runner.ConfigNotFound):
+        runner.check_config(config)
+    config = tmp_inventory_files
+    with open(config, 'a', encoding='utf-8') as config_file:
+        config_file.write('\na - b = c\n:\n')
+    with pytest.raises(runner.CorruptedConfig):
+        runner.check_config(config)
