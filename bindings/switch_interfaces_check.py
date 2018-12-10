@@ -49,15 +49,25 @@ def check_switch_interfaces(task, interface_names):
     return Result(task.host, result=result)
 
 
+def execute(nornir):
+    '''Execute this binding.
+    Arguments:
+        * nornir - instnace of nornir.core.Nornir
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
+    interface_names = input('Enter interface names > ')
+    interface_list = interface_names.split(', ')
+    return nornir.run(task=check_switch_interfaces,
+                      interface_names=interface_list)
+
+
 if __name__ == '__main__':
     # grab one host from inventory, execute operations and print out only
     # topmost (umbrella operation) results
     nrnr = InitNornir(config_file='config.yml')
     nrnr = nrnr.filter(name='test-host')
     nornir_set_credentials(nrnr)
-    interface_names = input('Enter interface names > ')
-    interface_list = interface_names.split(', ')
-    result = nrnr.run(task=check_switch_interfaces,
-                      interface_names=interface_list)
+    result = execute(nrnr)
     for host in result:
         print_result(result[host][0])

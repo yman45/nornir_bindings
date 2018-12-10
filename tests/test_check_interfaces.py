@@ -302,7 +302,7 @@ def test_get_interfaces_general_info(set_vendor_vars):
             check_interfaces.get_interfaces_general_info, effect=outputs)
     (int_40ge1_0_2_1, int_10ge1_0_2_3013, int_eth_trunk0,
         int_vlanif761) = prepare_interfaces(huawei_task,
-                                            cisco_interface_names)
+                                            huawei_interface_names)
     check_interfaces.get_interfaces_general_info(huawei_task)
     assert int_40ge1_0_2_1.description == '\\'
     assert int_40ge1_0_2_1.mac_address == '30:d1:7e:e3:f9:61'
@@ -332,3 +332,48 @@ def test_get_interfaces_general_info(set_vendor_vars):
     assert int_vlanif761.duplex is None
     assert int_vlanif761.load_in is None
     assert int_vlanif761.load_out is None
+
+
+@pytest.mark.xfail(reason="operation not implemented")
+def test_sanitize_interface_list(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    no_interface_task = create_fake_task(
+            None, None, None, None, check_interfaces.sanitize_interface_list)
+    result = check_interfaces.sanitize_interface_list(no_interface_task, '')
+    assert result.failed is True
+    huawei_interface_names = [
+            '40GE1/0/2:1', '10GE1/0/2.3013', 'Eth-Trunk0', 'Vlanif761']
+    outputs = []
+    for interface in huawei_interface_names:
+        name = interface_name_to_file_name(interface)
+        file_name = 'huawei_show_int_' + name + '.txt'
+        outputs.append(get_file_contents(file_name))
+    # add incorrect interface
+    huawei_interface_names.insert(2, '24GE1/77')
+    outputs.insert(2, '''"^\nError: Wrong parameter found at '^' position."''')
+    huawei_task = create_fake_task(
+            None, vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
+            check_interfaces.sanitize_interface_list, effect=outputs)
+    check_interfaces.sanitize_interface_list(huawei_task,
+                                             huawei_interface_names)
+    assert len(huawei_task.host['interfaces']) == 4
+    assert '24GE1/77' not in huawei_task.host['interfaces']
+    assert 'Eth-Trunk0' in huawei_task.host['interfaces']
+    vendor_vars = set_vendor_vars
+    cisco_interface_names = [
+            'Ethernet1/3/1', 'Ethernet1/31.3000', 'port-channel2', 'Vlan741']
+    outputs = []
+    for interface in cisco_interface_names:
+        name = interface_name_to_file_name(interface)
+        file_name = 'cisco_show_int_' + name + '.txt'
+        outputs.append(get_file_contents(file_name))
+    # add incorrect interface
+    cisco_interface_names.insert(2, 'etoh1/3/2')
+    outputs.insert(2, '''"^\nInvalid interface format at '^' marker."''')
+    cisco_task = create_fake_task(
+            None, vendor_vars['Cisco Nexus'], None, 'nxos',
+            check_interfaces.sanitize_interface_list, effect=outputs)
+    check_interfaces.sanitize_interface_list(cisco_task, cisco_interface_names)
+    assert len(cisco_task.host['interfaces']) == 4
+    assert 'Ethernet1/3/2' not in cisco_task.host['interfaces']
+    assert 'Vlan741' in cisco_task.host['interfaces']

@@ -409,3 +409,9 @@ def get_interfaces_general_info(task, interface_list=None):
                 interface.speed, interface.duplex, interface.load_in,
                 interface.load_out)
     return Result(host=task.host, result=result)
+
+
+def sanitize_interface_list(task, interface_list):
+    if not interface_list:
+        return Result(host=task.host, failed=True,
+                      result='No valid interfaces provided')
