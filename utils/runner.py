@@ -184,11 +184,15 @@ def check_config(config):
         raise ConfigNotFound('No config found at {}'.format(config))
     try:
         yaml = YAML()
-        config = yaml.load(config)
-        host_file = config['SimpleInventory']['host_file']
-        group_file = config['SimpleInventory']['group_file']
-        yaml.load(host_file)
-        yaml.load(group_file)
+        with open(config, 'r', encoding='utf-8') as config_file:
+            configuration = yaml.load(config_file)
+        hosts = configuration['SimpleInventory']['host_file']
+        groups = configuration['SimpleInventory']['group_file']
+        # test host and group files for syntax by loading them
+        with open(hosts, 'r', encoding='utf-8') as host_file:
+            yaml.load(host_file)
+        with open(groups, 'r', encoding='utf-8') as group_file:
+            yaml.load(group_file)
     except ScannerError as e:
         raise CorruptedConfig('Corrupted config: {}'.format(e))
 
