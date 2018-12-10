@@ -3,6 +3,14 @@ Nornir bindings and operations
 
 This repository consist of different operations and bindings written using Nornir.
 
+Runner
+------
+
+The implied method to run bindings is by executing utils/runner.py and giving it 
+_HOSTNAME_ of a single host to run binding with. If host isn't in inventory, runner will allow 
+you to interactively add it. But it can't add new groups. Run it with --help for more 
+information.
+
 Bindings
 --------
 
@@ -28,12 +36,14 @@ Currently more information can be find in function docstrings.
 Compatibilty
 ------------
 
-All code is targeted Cisco NX-OS 6 and Huawei VRPv8 V200 if not stated otherwise.
+All code is targeted Cisco NX-OS 6 and Huawei VRPv8 V200 if not stated otherwise. Though it may 
+work on other code versions.
 
 Requirements
 ------------
 
-_nornir_ and all of it dependencies (see requirements.txt). For tests _pytest_ is required.
+_click_, _nornir_ and all of the dependencies (see requirements.txt). For tests _pytest_ is 
+required.
 
 Written by
 ----------
