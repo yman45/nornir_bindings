@@ -11,19 +11,36 @@ from utils.nornir_utils import nornir_set_credentials
 from app_exception import AppException
 
 
-class NoGroupsHost(AppException):
+class RunnerException(AppException):
+    '''Top-level module exception for inheritance purposes.'''
+    pass
+
+
+class NoGroupsHost(RunnerException):
     '''Exception to raise in a process of adding host into inventory if there
     are no groups configured for that host.'''
     pass
 
 
-class ConfigNotFound(AppException):
+class UnconfiguredGroup(RunnerException):
+    '''This exception raised if group, which name user typed in, is not
+    congiured.'''
+    pass
+
+
+class ConfigNotFound(RunnerException):
     '''Exception to raise if Nornir config is not founded on given path.'''
     pass
 
 
-class CorruptedConfig(AppException):
+class CorruptedConfig(RunnerException):
     '''Exception to raise if there is a problem with Nornir config.'''
+    pass
+
+
+class IPRetrievalError(RunnerException):
+    '''This exception raised if no IP address can be retrived for given
+    hostname by any defined method.'''
     pass
 
 
@@ -42,7 +59,7 @@ def main(config, hostname):
         click.echo('Config can not be found at {}'.format(config))
         exit(1)
     except CorruptedConfig as e:
-        click.echo('Config error - {}'.format(e))
+        click.echo(e)
         exit(1)
     if not is_in_inventory(config, hostname):
         click.echo('Host not found in inventory.')
@@ -51,23 +68,23 @@ def main(config, hostname):
                 ' domain name to do a DNS lookup into')
         ip_addr = click.prompt(txt1)
         try:
-            host_defnintion = ipaddress.ip_address(ip_addr)
-        except ValueError:
-            try:
-                import socket
-                host_defnintion = socket.gethostbyname(hostname+'.'+ip_addr)
-            except socket.gaierror:
-                click.echo('Incorrect IP address, hostname or domain')
-                exit(1)
+            host_ip = get_host_ip_address(ip_addr, hostname)
+        except IPRetrievalError as e:
+            click.echo(e)
+            exit(1)
         click.echo('Available groups: {}'.format(
             ', '.join([x for x in get_inventory_groups(config)])))
         txt2 = ('Enter groups separated by commas, spaces will'
                 ' be stripped, unknown groups ignored, new groups creation'
                 ' unsuppoted')
         groups = click.prompt(txt2)
-        add_to_inventory(config, hostname, host_defnintion, groups)
+        try:
+            add_to_inventory(config, hostname, host_ip, groups)
+        except UnconfiguredGroup as e:
+            click.echo(e)
+            exit(1)
     bindings = [x for x in os.listdir(
-        'bindings') if '.py' in x and not x.startswith('.')]
+        'bindings') if '.py' in x and not x.startswith(('.', '_'))]
     bindings_dict = {y: x for y, x in enumerate(bindings)}
     for num, binding in bindings_dict.items():
         click.echo('{}: {}'.format(num+1, binding[:-3]))
@@ -125,7 +142,7 @@ def add_to_inventory(config, hostname, ip, groups, no_such_group_ignore=False):
         * groups - string that represents groups this host will be added to;
             group names must be separated by commas, spaces will be ignored
         * no_such_group_ignore (default to False) - if True, silently drop
-            unexisted groups, otherwise raise ValueError
+            unexisted groups, otherwise raise UnconfiguredGroup
     Returns nothing
     '''
     if not groups:
@@ -138,7 +155,8 @@ def add_to_inventory(config, hostname, ip, groups, no_such_group_ignore=False):
     for group in groups:
         if group not in configured_groups:
             if not no_such_group_ignore:
-                raise ValueError('Group {} is not configured'.format(group))
+                raise UnconfiguredGroup('Group {} is not configured'.format(
+                    group))
             else:
                 continue
         else:
@@ -173,6 +191,26 @@ def check_config(config):
         yaml.load(group_file)
     except ScannerError as e:
         raise CorruptedConfig('Corrupted config: {}'.format(e))
+
+
+def get_host_ip_address(user_input, hostname):
+    '''Get host IP address. First try to convert user input into valid IP
+    address. If it fails use that input as domain name and try DNS lookup. If
+    that fails to - raise IPRetrievalError.
+    Arguments:
+        * user_input - input from user (we expect it to be either IP address or
+            name of DNS domain
+        * hostname - just a hostname
+    Returns string, representing IP address
+    '''
+    try:
+        return ipaddress.ip_address(user_input).compressed
+    except ValueError:
+        try:
+            import socket
+            return socket.gethostbyname(hostname+'.'+user_input)
+        except socket.gaierror:
+            raise IPRetrievalError('Incorrect IP address, hostname or domain')
 
 
 if __name__ == '__main__':

@@ -75,7 +75,7 @@ def test_add_to_inventory(tmp_inventory_files):
     runner.add_to_inventory(config, 'cisco-dc2', '10.3.3.3',
                             'dc_2, cisco_tors')
     assert runner.is_in_inventory(config, 'cisco-dc2') is True
-    with pytest.raises(ValueError):
+    with pytest.raises(runner.UnconfiguredGroup):
         runner.add_to_inventory(config, 'cisco-dc3', '10.4.4.4.',
                                 'dc_3, cisco_tors')
     assert runner.add_to_inventory(
@@ -97,3 +97,11 @@ def test_check_config(tmp_inventory_files):
         config_file.write('\na - b = c\n:\n')
     with pytest.raises(runner.CorruptedConfig):
         runner.check_config(config)
+
+
+def test_get_host_ip_address():
+    with pytest.raises(runner.IPRetrievalError):
+        runner.get_host_ip_address('192.168.888.1', 'somehost')
+    with pytest.raises(runner.IPRetrievalError):
+        runner.get_host_ip_address('somedomain', 'somehost')
+    assert runner.get_host_ip_address('com', 'google') is not None
