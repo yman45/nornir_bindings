@@ -98,12 +98,22 @@ def check_vrf(task, vrf_name):
     return Result(task.host, result=result)
 
 
+def execute(nornir):
+    '''Execute this binding.
+    Arguments:
+        * nornir - instnace of nornir.core.Nornir
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
+    vrf_name = input('Enter VRF name > ')
+    return nornir.run(task=check_vrf, vrf_name=vrf_name)
+
+
 if __name__ == '__main__':
     # grab hosts from inventory, execute operations and print out only topmost
     # (umbrella operation) results
     nrnr = InitNornir(config_file='config.yml')
     nornir_set_credentials(nrnr)
-    vrf_name = input('Enter VRF name > ')
-    result = nrnr.run(task=check_vrf, vrf_name=vrf_name)
+    result = execute(nrnr)
     for host in result:
         print_result(result[host][0])

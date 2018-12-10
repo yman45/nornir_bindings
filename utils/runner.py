@@ -1,11 +1,12 @@
-import click
+import os
 import ipaddress
+import click
+from importlib import import_module
 from yaml.scanner import ScannerError
 from ruamel.yaml import YAML
 from nornir.core import InitNornir
 from nornir.plugins.functions.text import print_result
 from utils.nornir_utils import nornir_set_credentials
-from bindings.tors_vrf_check import check_vrf
 
 
 class NoGroupsHost(Exception):
@@ -15,9 +16,14 @@ class NoGroupsHost(Exception):
 
 
 @click.command()
-@click.option('-c', '--config', default='config.yml')
+@click.option('-c', '--config', default='config.yml', metavar='<PATH>',
+              help='path to Nornir config file')
 @click.argument('hostname')
 def main(config, hostname):
+    '''Dynamically choose Nornir binding defind in 'bindings/' directory and
+    execute it on HOSTNAME. If HOSTNAME is not in inventory, you will be
+    prompted to add it in (follow instructions in prompts).
+    '''
     if not is_in_inventory(config, hostname):
         click.echo('Host not found in inventory.')
         click.confirm('Add it?', abort=True)
@@ -40,13 +46,19 @@ def main(config, hostname):
                 ' unsuppoted')
         groups = click.prompt(txt2)
         add_to_inventory(config, hostname, host_defnintion, groups)
-    vrf_name = click.prompt('VRF name')
+    bindings = [x for x in os.listdir(
+        'bindings') if '.py' in x and not x.startswith('.')]
+    bindings_dict = {y: x for y, x in enumerate(bindings)}
+    for num, binding in bindings_dict.items():
+        click.echo('{}: {}'.format(num+1, binding[:-3]))
+    input_num = click.prompt('Choose binding to run', type=int)
+    chosen_binding = bindings_dict[input_num-1][:-3]
+    binding_module = import_module('.'+chosen_binding, package='bindings')
     nrnr = InitNornir(config_file='config.yml')
     nrnr = nrnr.filter(name=hostname)
     nornir_set_credentials(nrnr)
-    result = nrnr.run(task=check_vrf, vrf_name=vrf_name)
-    for host in result:
-        print_result(result[host][0])
+    result = binding_module.execute(nrnr)
+    print_result(result[hostname][0])
 
 
 def get_inventory_groups(config):
