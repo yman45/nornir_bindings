@@ -16,8 +16,7 @@ Bindings
 
  * tors\_vrf\_check - check different aspects of VRF status on a switch (written for ToR switches)
     and prints out assumption on its operability; works on full inventory
- * switch\_interfaces\_check - gather different states and characteristics of
-   interfaces on a host
+ * switch\_interfaces\_check - gather different states and characteristics of interfaces on a host
 
 Operations
 ----------
@@ -32,6 +31,8 @@ More information
 ----------------
 
 Currently more information can be find in function docstrings.
+First binding was written as part of a blog post that can be founded
+[here](http://dvjourney.yman.site/2018/09/30/network-automation-with-nornir/).
 
 Compatibilty
 ------------

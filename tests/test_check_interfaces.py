@@ -334,7 +334,6 @@ def test_get_interfaces_general_info(set_vendor_vars):
     assert int_vlanif761.load_out is None
 
 
-@pytest.mark.xfail(reason="operation not implemented")
 def test_sanitize_interface_list(set_vendor_vars):
     vendor_vars = set_vendor_vars
     no_interface_task = create_fake_task(
@@ -355,10 +354,10 @@ def test_sanitize_interface_list(set_vendor_vars):
             None, vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
             check_interfaces.sanitize_interface_list, effect=outputs)
     check_interfaces.sanitize_interface_list(huawei_task,
-                                             huawei_interface_names)
+                                             ', '.join(huawei_interface_names))
     assert len(huawei_task.host['interfaces']) == 4
-    assert '24GE1/77' not in huawei_task.host['interfaces']
-    assert 'Eth-Trunk0' in huawei_task.host['interfaces']
+    assert '24GE1/77' not in [x.name for x in huawei_task.host['interfaces']]
+    assert 'Eth-Trunk0' in [x.name for x in huawei_task.host['interfaces']]
     vendor_vars = set_vendor_vars
     cisco_interface_names = [
             'Ethernet1/3/1', 'Ethernet1/31.3000', 'port-channel2', 'Vlan741']
@@ -373,7 +372,9 @@ def test_sanitize_interface_list(set_vendor_vars):
     cisco_task = create_fake_task(
             None, vendor_vars['Cisco Nexus'], None, 'nxos',
             check_interfaces.sanitize_interface_list, effect=outputs)
-    check_interfaces.sanitize_interface_list(cisco_task, cisco_interface_names)
+    check_interfaces.sanitize_interface_list(cisco_task,
+                                             ', '.join(cisco_interface_names))
     assert len(cisco_task.host['interfaces']) == 4
-    assert 'Ethernet1/3/2' not in cisco_task.host['interfaces']
-    assert 'Vlan741' in cisco_task.host['interfaces']
+    assert 'Ethernet1/3/2' not in [x.name for x in cisco_task.host[
+        'interfaces']]
+    assert 'Vlan741' in [x.name for x in cisco_task.host['interfaces']]

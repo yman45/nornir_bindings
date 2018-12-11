@@ -358,8 +358,9 @@ def get_interfaces_general_info(task, interface_list=None):
                 (interface.speed, interface.duplex, interface.load_in,
                     interface.load_out) = (None, None, None, None)
                 continue
-            speed_and_duplex = re.search(r'(full|half)-duplex, (\d{1,3}) Gb/s',
-                                         interface_full_output)
+            # as it can full of Full duplex we lowering output for this step
+            speed_and_duplex = re.search(r'(full|half)-duplex, (\d{1,3}) gb/s',
+                                         interface_full_output.lower())
             interface.duplex = speed_and_duplex.group(1)
             interface.speed = int(speed_and_duplex.group(2))
             interface.load_in = convert_load(re.search(
@@ -390,9 +391,13 @@ def get_interfaces_general_info(task, interface_list=None):
                 interface.duplex = re.search(
                         r'Duplex:\s+(FULL|HALF),',
                         interface_full_output).group(1).lower()
-                interface.speed = int(re.search(
+                if interface.oper_status == 'up':
+                    interface.speed = int(re.search(
                         r'Speed:\s+(\d+),',
                         interface_full_output).group(1))/1000
+                else:
+                    # Down interface show speed as AUTO
+                    interface.speed = 0
             interface.load_in = convert_load(re.search(
                 r'input rate:? (\d+) bits/sec,',
                 interface_full_output).group(1))
@@ -414,4 +419,25 @@ def get_interfaces_general_info(task, interface_list=None):
 def sanitize_interface_list(task, interface_list):
     if not interface_list:
         return Result(host=task.host, failed=True,
-                      result='No valid interfaces provided')
+                      result='No interfaces provided')
+    interface_list = [x.strip() for x in interface_list.split(',')]
+    clean_interface_list = []
+    for interface in interface_list:
+        connection = task.host.get_connection('netmiko')
+        show_interface = connection.send_command(
+                task.host['vendor_vars']['show interface'].format(interface))
+        # interface names can be found in a similar way for both NX-OS and
+        # VRPv8, at least for now
+        if ('invalid interface format' not in show_interface.lower() and
+                'error: wrong parameter' not in show_interface.lower()):
+            clean_interface_list.append(show_interface.split(' ')[0])
+    if len(clean_interface_list) == 0:
+        return Result(host=task.host, failed=True,
+                      result='No valid interface names found')
+    else:
+        task.host['interfaces'] = [SwitchInterface(
+            x) for x in clean_interface_list]
+        return Result(
+            host=task.host,
+            result='{} interfaces found to be valid ot of {} provided'.format(
+                len(clean_interface_list), len(interface_list)))
