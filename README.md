@@ -31,7 +31,7 @@ More information
 ----------------
 
 Currently more information can be find in function docstrings.
-First binding was written as part of a blog post that can be founded
+First binding was written as part of a blog post that can be found
 [here](http://dvjourney.yman.site/2018/09/30/network-automation-with-nornir/).
 
 Compatibilty
