@@ -391,12 +391,15 @@ def get_interfaces_general_info(task, interface_list=None):
                 interface.duplex = re.search(
                         r'Duplex:\s+(FULL|HALF),',
                         interface_full_output).group(1).lower()
-                if interface.oper_status == 'up':
+                # If oper status was not set previously let's consider it's
+                # down for now
+                if getattr(interface, 'oper_status', 'down') == 'up':
                     interface.speed = int(re.search(
                         r'Speed:\s+(\d+),',
                         interface_full_output).group(1))/1000
                 else:
-                    # Down interface show speed as AUTO
+                    # Down interface show speed as AUTO; need the way to
+                    # overcome it
                     interface.speed = 0
             interface.load_in = convert_load(re.search(
                 r'input rate:? (\d+) bits/sec,',

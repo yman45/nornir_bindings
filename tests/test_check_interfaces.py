@@ -51,6 +51,60 @@ def get_ip_outputs(interfaces, vendor, pad=''):
     return outputs
 
 
+def create_test_interfaces(interface_names, output, vendor_vars, vrf_name, nos,
+                           operation, file_prefix, effect_outputs=None):
+    '''Combine create_fake_task with prepare_interfaces helper functions to
+    produce task/host filled with interfaces, execute task and return list of
+    interfaces back.
+    Arguments:
+        * interface_names - list of interface names
+        * output - string with CLI output of some command, if we need single
+            output
+        * vendor_vars - dict with NOS CLI commands
+        * vrf_name - name of VRF to test upon
+        * nos - NOS name
+        * operation - instance of nornir.core.task.Task which we will test
+        * file_prefix - prefix to find file names to produce different host
+            outputs, if we need more than one
+        * effect_outputs (defaults to None) - list of outputs ready to be used
+            as mock side effect
+    Returns:
+        * list of utils.switch_objects.SwitchInterface associated with task
+            host
+    '''
+    if file_prefix:
+        outputs = []
+        for interface in interface_names:
+            name = interface_name_to_file_name(interface)
+            file_name = file_prefix + name + '.txt'
+            outputs.append(get_file_contents(file_name))
+    elif effect_outputs:
+        outputs = effect_outputs
+    else:
+        outputs = None
+    fake_task = create_fake_task(output, vendor_vars, vrf_name, nos, operation,
+                                 outputs)
+    test_interfaces = prepare_interfaces(fake_task, interface_names)
+    operation(fake_task)
+    return test_interfaces
+
+
+def do_interface_checks(dicts, objs):
+    '''Get dict with interface names and anticipated values for different
+    attributes and list of actual interface objects. Do assert checks between
+    anticipated and real values.
+    Attributes:
+        * dicts - dict of dicts with interface names, they attributes and
+            values, like {'name': {'attr': 'value'}, {'attr': 'value'}, 'name':
+            ...}
+        * objs - list of utils.switch_objects.SwitchInterface
+    Returns nothing
+    '''
+    for interface, obj in zip(dicts, objs):
+        for k, v in dicts[interface].items():
+            assert getattr(obj, k) == v
+
+
 def test_convert_mac_address():
     with pytest.raises(ValueError):
         check_interfaces.convert_mac_address('bc3f.0a2b.16')
@@ -66,56 +120,54 @@ def test_convert_mac_address():
             'bc3F-0a2B-1672') == 'bc:3f:0a:2b:16:72'
 
 
-def test_check_interfaces_status(set_vendor_vars):
+def test_check_interfaces_status_cisco(set_vendor_vars):
     vendor_vars = set_vendor_vars
-    cisco_interface_names = [
-            'Ethernet1/22/2', 'Ethernet1/25', 'port-channel1.3000', 'Vlan604']
-    cisco_task = create_fake_task(get_file_contents(
-        'cisco_show_int_brief.txt'), vendor_vars['Cisco Nexus'], None, 'nxos',
-        check_interfaces.check_interfaces_status)
-    eth1_22_2_int, eth1_25_int, po1_3000_int, vlan604_int = prepare_interfaces(
-        cisco_task, cisco_interface_names)
-    check_interfaces.check_interfaces_status(cisco_task)
-    assert eth1_22_2_int.admin_status == 'down'
-    assert eth1_25_int.admin_status == 'up'
-    assert po1_3000_int.admin_status == 'up'
-    assert vlan604_int.admin_status == 'up'
-    assert eth1_22_2_int.oper_status == 'down'
-    assert eth1_25_int.oper_status == 'up'
-    assert po1_3000_int.oper_status == 'up'
-    assert po1_3000_int.subinterface is True
-    assert vlan604_int.oper_status == 'down'
-    assert vlan604_int.svi is True
-    huawei_interface_names = [
-            '40GE1/0/28:1', '40GE1/0/32:4', 'Vlanif1517', 'Vlanif762']
-    huawei_task = create_fake_task(get_file_contents(
-            'huawei_show_int_brief.txt'), vendor_vars['Huawei CE'], None,
-            'huawei_vrpv8', check_interfaces.check_interfaces_status)
-    int_40ge1_0_28_1, int_40ge1_0_32_4, int_vlanif1517, int_vlanif762 = \
-        prepare_interfaces(huawei_task, huawei_interface_names)
-    check_interfaces.check_interfaces_status(huawei_task)
-    assert int_40ge1_0_28_1.admin_status == 'down'
-    assert int_40ge1_0_32_4.admin_status == 'up'
-    assert int_vlanif1517.admin_status == 'up'
-    assert int_vlanif762.admin_status == 'up'
-    assert int_40ge1_0_28_1.oper_status == 'down'
-    assert int_40ge1_0_32_4.oper_status == 'down'
-    assert int_vlanif1517.oper_status == 'up'
-    assert int_vlanif762.oper_status == 'up'
-    assert int_vlanif762.svi is True
+    interfaces = {
+            'Ethernet1/22/2':
+            {'admin_status': 'down', 'oper_status': 'down'},
+            'Ethernet1/25':
+            {'admin_status': 'up', 'oper_status': 'up'},
+            'port-channel1.3000':
+            {'admin_status': 'up', 'oper_status': 'up', 'subinterface': True},
+            'Vlan604':
+            {'admin_status': 'up', 'oper_status': 'down', 'svi': True}
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(), get_file_contents('cisco_show_int_brief.txt'),
+            vendor_vars['Cisco Nexus'], None, 'nxos',
+            check_interfaces.check_interfaces_status, None)
+    do_interface_checks(interfaces, interface_objects)
 
 
-def test_get_interfaces_ip_addresses(set_vendor_vars):
+def test_check_interfaces_status_huawei(set_vendor_vars):
     vendor_vars = set_vendor_vars
-    cisco_interface_names = [
+    interfaces = {
+            '40GE1/0/28:1':
+            {'admin_status': 'down', 'oper_status': 'down'},
+            '40GE1/0/32:4':
+            {'admin_status': 'up', 'oper_status': 'down'},
+            'Vlanif1517':
+            {'admin_status': 'up', 'oper_status': 'up'},
+            'Vlanif762':
+            {'admin_status': 'up', 'oper_status': 'up', 'svi': True}
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(), get_file_contents('huawei_show_int_brief.txt'),
+            vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
+            check_interfaces.check_interfaces_status, None)
+    do_interface_checks(interfaces, interface_objects)
+
+
+def test_get_interfaces_ip_addresses_cisco(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interface_names = [
             'Ethernet1/22/2', 'Ethernet1/25', 'port-channel1.3000', 'Vlan604']
-    outputs = get_ip_outputs(cisco_interface_names, 'cisco')
-    cisco_task = create_fake_task(
-            None, vendor_vars['Cisco Nexus'], None, 'nxos',
-            check_interfaces.get_interfaces_ip_addresses, effect=outputs)
-    eth1_22_2_int, eth1_25_int, po1_3000_int, vlan604_int = prepare_interfaces(
-        cisco_task, cisco_interface_names)
-    check_interfaces.get_interfaces_ip_addresses(cisco_task)
+    outputs = get_ip_outputs(interface_names, 'cisco')
+    (eth1_22_2_int, eth1_25_int, po1_3000_int,
+     vlan604_int) = create_test_interfaces(
+             interface_names, None, vendor_vars['Cisco Nexus'], None, 'nxos',
+             check_interfaces.get_interfaces_ip_addresses, None,
+             effect_outputs=outputs)
     assert len(eth1_22_2_int.ipv4_addresses) == 0
     assert len(eth1_25_int.ipv4_addresses) == 1
     assert eth1_25_int.ipv4_addresses[0].address.exploded == '172.18.10.9'
@@ -132,15 +184,18 @@ def test_get_interfaces_ip_addresses(set_vendor_vars):
     assert len(vlan604_int.ipv6_addresses) == 4
     assert vlan604_int.ipv6_addresses[0].primary is True
     assert vlan604_int.ipv6_addresses[1].primary is False
-    huawei_interface_names = [
+
+
+def test_get_interfaces_ip_addresses_huawei(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interface_names = [
              '40GE1/0/28:1', '40GE1/0/32:4', 'Vlanif1517', 'Vlanif762']
-    outputs = get_ip_outputs(huawei_interface_names, 'huawei')
-    huawei_task = create_fake_task(
-            None, vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
-            check_interfaces.get_interfaces_ip_addresses, effect=outputs)
-    int_40ge1_0_28_1, int_40ge1_0_32_4, int_vlanif1517, int_vlanif762 = \
-        prepare_interfaces(huawei_task, huawei_interface_names)
-    check_interfaces.get_interfaces_ip_addresses(huawei_task)
+    outputs = get_ip_outputs(interface_names, 'huawei')
+    (int_40ge1_0_28_1, int_40ge1_0_32_4, int_vlanif1517,
+     int_vlanif762) = create_test_interfaces(
+             interface_names, None, vendor_vars['Huawei CE'], None,
+             'huawei_vrpv8', check_interfaces.get_interfaces_ip_addresses,
+             None, effect_outputs=outputs)
     assert len(int_40ge1_0_28_1.ipv4_addresses) == 1
     assert int_40ge1_0_28_1.ipv4_addresses[0].address.exploded == \
         '192.168.13.13'
@@ -180,201 +235,177 @@ def test_check_arbitrary_interface(set_vendor_vars):
     assert len(fake_task.host['interfaces'][0].ipv6_addresses) == 3
 
 
-def test_get_interfaces_ip_neighbors(set_vendor_vars):
+def test_get_interfaces_ip_neighbors_cisco_no_neighbors(set_vendor_vars):
     vendor_vars = set_vendor_vars
-    sw_task = create_fake_task('placeholder', vendor_vars['Cisco Nexus'],
-                               'Galaxy', 'nxos',
-                               check_interfaces.get_interfaces_ip_neighbors)
-    sw_task.host['interfaces'] = [SwitchInterface('Ethernet1/32')]
-    check_interfaces.get_interfaces_ip_neighbors(sw_task)
-    assert sw_task.host['interfaces'][0].ipv4_neighbors == 0
+    task = create_fake_task('placeholder', vendor_vars['Cisco Nexus'],
+                            'Galaxy', 'nxos',
+                            check_interfaces.get_interfaces_ip_neighbors)
+    task.host['interfaces'] = [SwitchInterface('Ethernet1/32')]
+    check_interfaces.get_interfaces_ip_neighbors(task)
+    assert task.host['interfaces'][0].ipv4_neighbors == 0
+
+
+def test_get_interfaces_ip_neighbors_cisco(set_vendor_vars):
+    vendor_vars = set_vendor_vars
     outputs = get_ip_outputs(['Ethernet1/31.3013'], 'cisco',
                              pad='_neighbors_vrf')
-    cisco_task = create_fake_task(
+    task = create_fake_task(
             None, vendor_vars['Cisco Nexus'], 'Galaxy', 'nxos',
             check_interfaces.get_interfaces_ip_neighbors, effect=outputs)
-    interface = prepare_interfaces(cisco_task, ['Ethernet1/31.3013'])[0]
-    check_interfaces.get_interfaces_ip_neighbors(cisco_task)
+    interface = prepare_interfaces(task, ['Ethernet1/31.3013'])[0]
+    check_interfaces.get_interfaces_ip_neighbors(task)
     assert interface.ipv4_neighbors == 5
     assert interface.ipv6_neighbors == 3
+
+
+def test_get_interfaces_ip_neighbors_huawei(set_vendor_vars):
+    vendor_vars = set_vendor_vars
     outputs = get_ip_outputs(['100GE1/0/2.3000', 'Vlanif761'], 'huawei',
                              pad='_neighbors')
-    huawei_task = create_fake_task(
+    task = create_fake_task(
             None, vendor_vars['Huawei CE'], 'Lasers', 'huawei_vrpv8',
             check_interfaces.get_interfaces_ip_neighbors, effect=outputs)
     int_100ge1_0_2_3000, int_vlanif761 = prepare_interfaces(
-            huawei_task, ['100GE1/0/2.3000', 'Vlanif761'])
-    check_interfaces.get_interfaces_ip_neighbors(huawei_task)
+            task, ['100GE1/0/2.3000', 'Vlanif761'])
+    check_interfaces.get_interfaces_ip_neighbors(task)
     assert int_100ge1_0_2_3000.ipv4_neighbors == 2
     assert int_100ge1_0_2_3000.ipv6_neighbors == 3
     assert int_vlanif761.ipv4_neighbors == 0
     assert int_vlanif761.ipv6_neighbors == 0
 
 
-def test_get_interfaces_mode(set_vendor_vars):
+def test_get_interfaces_mode_cisco(set_vendor_vars):
     vendor_vars = set_vendor_vars
-    cisco_interface_names = [
-            'Ethernet1/22/1', 'Ethernet1/23/2', 'Ethernet1/25',
-            'port-channel1.3000', 'port-channel2', 'Vlan604']
-    cisco_task = create_fake_task(get_file_contents(
-        'cisco_show_int_brief.txt'), vendor_vars['Cisco Nexus'], None, 'nxos',
-        check_interfaces.get_interfaces_mode)
-    (eth1_22_1_int, eth1_23_2_int, eth1_25_int, po1_3000_int, po2_int,
-        vlan604_int) = prepare_interfaces(cisco_task, cisco_interface_names)
-    check_interfaces.get_interfaces_mode(cisco_task)
-    assert eth1_22_1_int.mode == 'switched'
-    assert eth1_23_2_int.mode == 'switched'
-    assert eth1_25_int.mode == 'routed'
-    assert po1_3000_int.mode == 'routed'
-    assert po2_int.mode == 'routed'
-    assert vlan604_int.mode == 'routed'
-    huawei_interface_names = [
-             '40GE1/0/17', '40GE1/0/2:1', 'Eth-Trunk1.3017', 'Vlanif761']
-    outputs = []
-    for interface in huawei_interface_names:
-        name = interface_name_to_file_name(interface)
-        file_name = 'huawei_show_int_' + name + '.txt'
-        outputs.append(get_file_contents(file_name))
-    huawei_task = create_fake_task(
-            None, vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
-            check_interfaces.get_interfaces_mode, effect=outputs)
-    int_40ge1_0_17, int_40ge1_0_2_1, int_eth_trunk1_3017, int_vlanif761 = \
-        prepare_interfaces(huawei_task, huawei_interface_names)
-    check_interfaces.get_interfaces_mode(huawei_task)
-    assert int_40ge1_0_17.mode == 'routed'
-    assert int_40ge1_0_2_1.mode == 'switched'
-    assert int_eth_trunk1_3017.mode == 'routed'
-    assert int_vlanif761.mode == 'routed'
+    interfaces = {
+            'Ethernet1/22/1': {'mode': 'switched'},
+            'Ethernet1/23/2': {'mode': 'switched'},
+            'Ethernet1/25': {'mode': 'routed'},
+            'port-channel1.3000': {'mode': 'routed'},
+            'port-channel2': {'mode': 'routed'},
+            'Vlan604': {'mode': 'routed'},
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(), get_file_contents('cisco_show_int_brief.txt'),
+            vendor_vars['Cisco Nexus'], None, 'nxos',
+            check_interfaces.get_interfaces_mode, None)
+    do_interface_checks(interfaces, interface_objects)
 
 
-def test_get_interfaces_general_info(set_vendor_vars):
+def test_get_interfaces_mode_huawei(set_vendor_vars):
     vendor_vars = set_vendor_vars
-    cisco_interface_names = [
-            'Ethernet1/3/1', 'Ethernet1/31.3000', 'port-channel2', 'Vlan741']
-    outputs = []
-    for interface in cisco_interface_names:
-        name = interface_name_to_file_name(interface)
-        file_name = 'cisco_show_int_' + name + '.txt'
-        outputs.append(get_file_contents(file_name))
-    cisco_task = create_fake_task(
-            None, vendor_vars['Cisco Nexus'], None, 'nxos',
-            check_interfaces.get_interfaces_general_info, effect=outputs)
-    eth1_3_1_int, eth1_31_3000_int, po2_int, vlan741_int = prepare_interfaces(
-            cisco_task, cisco_interface_names)
-    check_interfaces.get_interfaces_general_info(cisco_task)
-    assert eth1_3_1_int.description is None
-    assert eth1_3_1_int.mac_address == '74:a0:2f:4c:b6:50'
-    assert eth1_3_1_int.mtu == 1500
-    assert eth1_3_1_int.speed == 10
-    assert eth1_3_1_int.duplex == 'full'
-    assert eth1_3_1_int.load_in == 0.005
-    assert eth1_3_1_int.load_out == 0.016
-    assert eth1_31_3000_int.description is None
-    assert eth1_31_3000_int.mac_address == '88:1d:fc:ef:48:3c'
-    assert eth1_31_3000_int.mtu == 9000
-    assert eth1_31_3000_int.speed is None
-    assert eth1_31_3000_int.duplex is None
-    assert eth1_31_3000_int.load_in is None
-    assert eth1_31_3000_int.load_out is None
-    assert po2_int.description == 'leaf-3x4 port-channel3'
-    assert po2_int.mac_address == '74:a0:2f:4c:b6:81'
-    assert po2_int.mtu == 9000
-    assert po2_int.speed == 40
-    assert po2_int.duplex == 'full'
-    assert po2_int.load_in == 1.178
-    assert po2_int.load_out == 1.385
-    assert vlan741_int.description is None
-    assert vlan741_int.mac_address == '74:a0:2f:4c:b6:81'
-    assert vlan741_int.mtu == 9000
-    assert vlan741_int.speed is None
-    assert vlan741_int.duplex is None
-    assert vlan741_int.load_in is None
-    assert vlan741_int.load_out is None
-    huawei_interface_names = [
-            '40GE1/0/2:1', '10GE1/0/2.3013', 'Eth-Trunk0', 'Vlanif761']
-    outputs = []
-    for interface in huawei_interface_names:
-        name = interface_name_to_file_name(interface)
-        file_name = 'huawei_show_int_' + name + '.txt'
-        outputs.append(get_file_contents(file_name))
-    huawei_task = create_fake_task(
-            None, vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
-            check_interfaces.get_interfaces_general_info, effect=outputs)
-    (int_40ge1_0_2_1, int_10ge1_0_2_3013, int_eth_trunk0,
-        int_vlanif761) = prepare_interfaces(huawei_task,
-                                            huawei_interface_names)
-    check_interfaces.get_interfaces_general_info(huawei_task)
-    assert int_40ge1_0_2_1.description == '\\'
-    assert int_40ge1_0_2_1.mac_address == '30:d1:7e:e3:f9:61'
-    assert int_40ge1_0_2_1.mtu == 9712
-    assert int_40ge1_0_2_1.speed == 10
-    assert int_40ge1_0_2_1.duplex == 'full'
-    assert int_40ge1_0_2_1.load_in == 0.143
-    assert int_40ge1_0_2_1.load_out == 0.117
-    assert int_10ge1_0_2_3013.description is None
-    assert int_10ge1_0_2_3013.mac_address == 'bc:9c:31:c6:e2:c2'
-    assert int_10ge1_0_2_3013.mtu == 9000
-    assert int_10ge1_0_2_3013.speed is None
-    assert int_10ge1_0_2_3013.duplex is None
-    assert int_10ge1_0_2_3013.load_in is None
-    assert int_10ge1_0_2_3013.load_out is None
-    assert int_eth_trunk0.description is None
-    assert int_eth_trunk0.mac_address == 'ac:4e:91:46:35:91'
-    assert int_eth_trunk0.mtu == 9216
-    assert int_eth_trunk0.speed == 2
-    assert int_eth_trunk0.duplex == 'full'
-    assert int_eth_trunk0.load_in == 0.001
-    assert int_eth_trunk0.load_out == 0.001
-    assert int_vlanif761.description is None
-    assert int_vlanif761.mac_address == '30:d1:7e:e3:f9:67'
-    assert int_vlanif761.mtu == 9000
-    assert int_vlanif761.speed is None
-    assert int_vlanif761.duplex is None
-    assert int_vlanif761.load_in is None
-    assert int_vlanif761.load_out is None
-
-
-def test_sanitize_interface_list(set_vendor_vars):
+    interfaces = {
+            '40GE1/0/17': {'mode': 'routed'},
+            '40GE1/0/2:1': {'mode': 'switched'},
+            'Eth-Trunk1.3017': {'mode': 'routed'},
+            'Vlanif761': {'mode': 'routed'},
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(), None, vendor_vars['Huawei CE'], None,
+            'huawei_vrpv8', check_interfaces.get_interfaces_mode,
+            'huawei_show_int_')
+    do_interface_checks(interfaces, interface_objects)
     vendor_vars = set_vendor_vars
-    no_interface_task = create_fake_task(
-            None, None, None, None, check_interfaces.sanitize_interface_list)
-    result = check_interfaces.sanitize_interface_list(no_interface_task, '')
+
+
+def test_get_interfaces_general_info_cisco(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            'Ethernet1/3/1':
+            {'description': None, 'mac_address': '74:a0:2f:4c:b6:50', 'mtu':
+                1500, 'speed': 10, 'duplex': 'full', 'load_in': 0.005,
+                'load_out': 0.016},
+            'Ethernet1/31.3000':
+            {'description': None, 'mac_address': '88:1d:fc:ef:48:3c', 'mtu':
+                9000, 'speed': None, 'duplex': None, 'load_in': None,
+                'load_out': None},
+            'port-channel2':
+            {'description': 'leaf-3x4 port-channel3', 'mac_address':
+                '74:a0:2f:4c:b6:81', 'mtu': 9000, 'speed': 40, 'duplex':
+                'full', 'load_in': 1.178, 'load_out': 1.385},
+            'Vlan741':
+            {'description': None, 'mac_address': '74:a0:2f:4c:b6:81', 'mtu':
+                9000, 'speed': None, 'duplex': None, 'load_in': None,
+                'load_out': None}
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(), None, vendor_vars['Cisco Nexus'], None, 'nxos',
+            check_interfaces.get_interfaces_general_info, 'cisco_show_int_')
+    do_interface_checks(interfaces, interface_objects)
+
+
+def test_get_interfaces_general_info_huawei(set_vendor_vars):
+    # there are difficulties with checking speed on Huawei physical interfaces,
+    # so check if it equals 0
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            '40GE1/0/2:1':
+            {'description': '\\', 'mac_address': '30:d1:7e:e3:f9:61', 'mtu':
+                9712, 'speed': 0, 'duplex': 'full', 'load_in': 0.143,
+                'load_out': 0.117},
+            '10GE1/0/2.3013':
+            {'description': None, 'mac_address': 'bc:9c:31:c6:e2:c2', 'mtu':
+                9000, 'speed': None, 'duplex': None, 'load_in': None,
+                'load_out': None},
+            'Eth-Trunk0':
+            {'description': None, 'mac_address': 'ac:4e:91:46:35:91', 'mtu':
+                9216, 'speed': 2, 'duplex': 'full', 'load_in': 0.001,
+                'load_out': 0.001},
+            'Vlanif761':
+            {'description': None, 'mac_address': '30:d1:7e:e3:f9:67', 'mtu':
+                9000, 'speed': None, 'duplex': None, 'load_in': None,
+                'load_out': None}
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(), None, vendor_vars['Huawei CE'], None,
+            'huawei_vrpv8', check_interfaces.get_interfaces_general_info,
+            'huawei_show_int_')
+    do_interface_checks(interfaces, interface_objects)
+
+
+def test_sanitize_interface_list_no_interface():
+    task = create_fake_task(None, None, None, None,
+                            check_interfaces.sanitize_interface_list)
+    result = check_interfaces.sanitize_interface_list(task, '')
     assert result.failed is True
-    huawei_interface_names = [
+
+
+def test_sanitize_interface_list_huawei(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interface_names = [
             '40GE1/0/2:1', '10GE1/0/2.3013', 'Eth-Trunk0', 'Vlanif761']
     outputs = []
-    for interface in huawei_interface_names:
+    for interface in interface_names:
         name = interface_name_to_file_name(interface)
         file_name = 'huawei_show_int_' + name + '.txt'
         outputs.append(get_file_contents(file_name))
     # add incorrect interface
-    huawei_interface_names.insert(2, '24GE1/77')
+    interface_names.insert(2, '24GE1/77')
     outputs.insert(2, '''"^\nError: Wrong parameter found at '^' position."''')
-    huawei_task = create_fake_task(
+    task = create_fake_task(
             None, vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
             check_interfaces.sanitize_interface_list, effect=outputs)
-    check_interfaces.sanitize_interface_list(huawei_task,
-                                             ', '.join(huawei_interface_names))
-    assert len(huawei_task.host['interfaces']) == 4
-    assert '24GE1/77' not in [x.name for x in huawei_task.host['interfaces']]
-    assert 'Eth-Trunk0' in [x.name for x in huawei_task.host['interfaces']]
+    check_interfaces.sanitize_interface_list(task, ', '.join(interface_names))
+    assert len(task.host['interfaces']) == 4
+    assert '24GE1/77' not in [x.name for x in task.host['interfaces']]
+    assert 'Eth-Trunk0' in [x.name for x in task.host['interfaces']]
+
+
+def test_sanitize_interface_list_cisco(set_vendor_vars):
     vendor_vars = set_vendor_vars
-    cisco_interface_names = [
+    interface_names = [
             'Ethernet1/3/1', 'Ethernet1/31.3000', 'port-channel2', 'Vlan741']
     outputs = []
-    for interface in cisco_interface_names:
+    for interface in interface_names:
         name = interface_name_to_file_name(interface)
         file_name = 'cisco_show_int_' + name + '.txt'
         outputs.append(get_file_contents(file_name))
     # add incorrect interface
-    cisco_interface_names.insert(2, 'etoh1/3/2')
+    interface_names.insert(2, 'etoh1/3/2')
     outputs.insert(2, '''"^\nInvalid interface format at '^' marker."''')
-    cisco_task = create_fake_task(
+    task = create_fake_task(
             None, vendor_vars['Cisco Nexus'], None, 'nxos',
             check_interfaces.sanitize_interface_list, effect=outputs)
-    check_interfaces.sanitize_interface_list(cisco_task,
-                                             ', '.join(cisco_interface_names))
-    assert len(cisco_task.host['interfaces']) == 4
-    assert 'Ethernet1/3/2' not in [x.name for x in cisco_task.host[
-        'interfaces']]
-    assert 'Vlan741' in [x.name for x in cisco_task.host['interfaces']]
+    check_interfaces.sanitize_interface_list(task, ', '.join(interface_names))
+    assert len(task.host['interfaces']) == 4
+    assert 'Ethernet1/3/2' not in [x.name for x in task.host['interfaces']]
+    assert 'Vlan741' in [x.name for x in task.host['interfaces']]
