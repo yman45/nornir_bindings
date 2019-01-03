@@ -22,7 +22,8 @@ Operations
 ----------
 
  * check\_interfaces - consist of functions to get admin/oper state of interface list, assigned IP
-    addresses and number of learned neighbors (IP neighbors, meaning ARP and NDP)
+    addresses, number of learned neighbors (IP neighbors, meaning ARP and NDP) and other interace
+    information (description, speed, duplex, load, etc.)
  * check\_mac\_table - grab and count number of MAC addresses learned on interface
  * check\_vrf\_status - check for VRF presence on a switch, build list of assigned interfaces and
     check for status of BGP sessions in that VRF
@@ -49,4 +50,4 @@ required.
 Written by
 ----------
 
-Yakov Shiryaev in 2018.
+Yakov Shiryaev, 2018-2019.

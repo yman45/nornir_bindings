@@ -52,7 +52,8 @@ def get_ip_outputs(interfaces, vendor, pad=''):
 
 
 def create_test_interfaces(interface_names, output, vendor_vars, vrf_name, nos,
-                           operation, file_prefix, effect_outputs=None):
+                           operation, file_prefix, effect_outputs=None,
+                           up_map=None):
     '''Combine create_fake_task with prepare_interfaces helper functions to
     produce task/host filled with interfaces, execute task and return list of
     interfaces back.
@@ -68,6 +69,10 @@ def create_test_interfaces(interface_names, output, vendor_vars, vrf_name, nos,
             outputs, if we need more than one
         * effect_outputs (defaults to None) - list of outputs ready to be used
             as mock side effect
+        * up_map (defaults to None) - dict, which maps interface names to
+            either True or False, if True interface object oper_status
+            attirbute will be set to 'up'; it is required to test speed,
+            duplex, etc. grabbing if interface status was not check first
     Returns:
         * list of utils.switch_objects.SwitchInterface associated with task
             host
@@ -85,6 +90,10 @@ def create_test_interfaces(interface_names, output, vendor_vars, vrf_name, nos,
     fake_task = create_fake_task(output, vendor_vars, vrf_name, nos, operation,
                                  outputs)
     test_interfaces = prepare_interfaces(fake_task, interface_names)
+    if up_map:
+        for interface in test_interfaces:
+            if up_map[interface.name]:
+                interface.oper_status = 'up'
     operation(fake_task)
     return test_interfaces
 
@@ -327,9 +336,12 @@ def test_get_interfaces_general_info_cisco(set_vendor_vars):
                 9000, 'speed': None, 'duplex': None, 'load_in': None,
                 'load_out': None}
             }
+    up_map = {'Ethernet1/3/1': True, 'Ethernet1/31.3000': True,
+              'port-channel2': True, 'Vlan741': True}
     interface_objects = create_test_interfaces(
             interfaces.keys(), None, vendor_vars['Cisco Nexus'], None, 'nxos',
-            check_interfaces.get_interfaces_general_info, 'cisco_show_int_')
+            check_interfaces.get_interfaces_general_info, 'cisco_show_int_',
+            up_map=up_map)
     do_interface_checks(interfaces, interface_objects)
 
 
@@ -340,8 +352,8 @@ def test_get_interfaces_general_info_huawei(set_vendor_vars):
     interfaces = {
             '40GE1/0/2:1':
             {'description': '\\', 'mac_address': '30:d1:7e:e3:f9:61', 'mtu':
-                9712, 'speed': 0, 'duplex': 'full', 'load_in': 0.143,
-                'load_out': 0.117},
+                9712, 'speed': None, 'duplex': None, 'load_in': None,
+                'load_out': None},
             '10GE1/0/2.3013':
             {'description': None, 'mac_address': 'bc:9c:31:c6:e2:c2', 'mtu':
                 9000, 'speed': None, 'duplex': None, 'load_in': None,
@@ -355,10 +367,12 @@ def test_get_interfaces_general_info_huawei(set_vendor_vars):
                 9000, 'speed': None, 'duplex': None, 'load_in': None,
                 'load_out': None}
             }
+    up_map = {'40GE1/0/2:1': False, '10GE1/0/2.3013': True, 'Eth-Trunk0': True,
+              'Vlanif761': True}
     interface_objects = create_test_interfaces(
             interfaces.keys(), None, vendor_vars['Huawei CE'], None,
             'huawei_vrpv8', check_interfaces.get_interfaces_general_info,
-            'huawei_show_int_')
+            'huawei_show_int_', up_map=up_map)
     do_interface_checks(interfaces, interface_objects)
 
 

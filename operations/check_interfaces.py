@@ -353,14 +353,17 @@ def get_interfaces_general_info(task, interface_list=None):
                 interface_full_output).group(1))
             interface.mtu = int(re.search(r'MTU (\d{4}) bytes',
                                           interface_full_output).group(1))
-            if interface.svi or interface.subinterface:
-                # SVIs and subinterface doesn't have speed, duplex or load
+            if getattr(interface, 'oper_status', 'down') == 'down' or \
+                    interface.svi or interface.subinterface:
+                # SVIs and subinterface doesn't have speed, duplex or load; and
+                # this attributes has no meaningful values on down interfaces
+                # if 'oper_status' was not set, let's consider it's down
                 (interface.speed, interface.duplex, interface.load_in,
                     interface.load_out) = (None, None, None, None)
                 continue
-            # as it can full of Full duplex we lowering output for this step
+            # as it can be full or Full duplex - ignore case
             speed_and_duplex = re.search(r'(full|half)-duplex, (\d{1,3}) gb/s',
-                                         interface_full_output.lower())
+                                         interface_full_output, flags=re.I)
             interface.duplex = speed_and_duplex.group(1)
             interface.speed = int(speed_and_duplex.group(2))
             interface.load_in = convert_load(re.search(
@@ -377,8 +380,11 @@ def get_interfaces_general_info(task, interface_list=None):
             interface.mtu = int(re.search(
                 r'Maximum (?:Transmit Unit|Frame Length) is (\d{4})',
                 interface_full_output).group(1))
-            if interface.svi or interface.subinterface:
-                # SVIs and subinterface doesn't have speed, duplex or load
+            if getattr(interface, 'oper_status', 'down') == 'down' or \
+                    interface.svi or interface.subinterface:
+                # SVIs and subinterface doesn't have speed, duplex or load; and
+                # this attributes has no meaningful values on down interfaces
+                # if 'oper_status' was not set, let's consider it's down
                 (interface.speed, interface.duplex, interface.load_in,
                     interface.load_out) = (None, None, None, None)
                 continue
@@ -391,16 +397,9 @@ def get_interfaces_general_info(task, interface_list=None):
                 interface.duplex = re.search(
                         r'Duplex:\s+(FULL|HALF),',
                         interface_full_output).group(1).lower()
-                # If oper status was not set previously let's consider it's
-                # down for now
-                if getattr(interface, 'oper_status', 'down') == 'up':
-                    interface.speed = int(re.search(
-                        r'Speed:\s+(\d+),',
-                        interface_full_output).group(1))/1000
-                else:
-                    # Down interface show speed as AUTO; need the way to
-                    # overcome it
-                    interface.speed = 0
+                interface.speed = int(re.search(
+                    r'Speed:\s+(\d+),',
+                    interface_full_output).group(1))/1000
             interface.load_in = convert_load(re.search(
                 r'input rate:? (\d+) bits/sec,',
                 interface_full_output).group(1))
