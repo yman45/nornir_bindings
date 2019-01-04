@@ -232,8 +232,7 @@ def get_interfaces_ip_neighbors(task, interface_list=None):
             continue
         # must use VRF name in 'non-default' VRF for Cisco, but unnecessary in
         # any case for Huawei; we force VRF usage on Cisco even for 'default'
-        vrf_name = task.host['vrf_name'] if task.host[
-                'vrf_name'] else 'default'
+        vrf_name = task.host.get('vrf_name', 'default')
         ipv4_neighbors = connection.send_command(
             task.host['vendor_vars']['show ipv4 neighbors interface'].format(
                 interface.name, vrf_name))

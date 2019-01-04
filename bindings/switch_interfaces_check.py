@@ -3,7 +3,7 @@ from nornir.core import InitNornir
 from nornir.core.task import Result
 from nornir.plugins.functions.text import print_result
 from utils.nornir_utils import nornir_set_credentials
-from operations import check_interfaces
+from operations import check_interfaces, check_mac_table
 from app_exception import UnsupportedNOS
 
 
@@ -36,21 +36,43 @@ def check_switch_interfaces(task, interface_names):
              name='Check for interfaces mode (L2/L3)')
     task.run(task=check_interfaces.get_interfaces_general_info,
              name='Get interfaces characteristics')
+    task.run(task=check_interfaces.get_interfaces_ip_addresses,
+             name='Get interfaces IP addresses')
+    task.run(task=check_interfaces.get_interfaces_ip_neighbors,
+             name='Get interfaces IP neighbors (ARP/ND)')
+    task.run(task=check_mac_table.get_interfaces_macs,
+             name='Get number of MACs learned on interfaces')
     result = 'Interfaces state and characteristics:\n'
     for interface in task.host['interfaces']:
         result += '\tInterface {} with "{}" description\n'.format(
                 interface.name, interface.description)
         result += '\t\tadmin status: {}, operational status:{}\n'.format(
                 interface.admin_status, interface.oper_status)
-        result += '\t\t{} mode, MAC address {}, MTU {} bytes'.format(
+        result += '\t\t{} mode, MAC address {}, MTU {} bytes\n'.format(
             interface.mode, interface.mac_address, interface.mtu)
-        if interface.svi or interface.subinterface:
-            # SVIs and subinterfaces doesn't have speed, duplex and load
-            result += '\n'
-            continue
-        result += ',\n\t\t{} Gb/s, {} duplex, {}/{} in/out Gb/s load\n'.format(
-            interface.speed, interface.duplex, interface.load_in,
-            interface.load_out)
+        if interface.oper_status == 'up' and not (interface.svi or
+                                                  interface.subinterface):
+            result += '\t\t{} Gb/s, {} duplex, '.format(interface.speed,
+                                                        interface.duplex)
+            result += '{}/{} in/out Gb/s load\n'.format(interface.load_in,
+                                                        interface.load_out)
+        if interface.mode == 'routed':
+            if interface.ipv4_addresses:
+                result += '\t\tIPv4 addresses on interface: {}\n'.format(
+                        ', '.join([str(x) for x in interface.ipv4_addresses]))
+            else:
+                result += '\t\tNo IPv4 addresses\n'
+            if interface.ipv6_addresses:
+                result += '\t\tIPv6 addresses on interface: {}\n'.format(
+                        ', '.join([str(x) for x in interface.ipv6_addresses]))
+            else:
+                result += '\t\tNo IPv6 addresses\n'
+            result += '\t\tNumber or neighbors learned (ARP/NDP): '
+            result += '{}/{}\n'.format(interface.ipv4_neighbors,
+                                       interface.ipv6_neighbors)
+        if interface.mode == 'switched' or interface.svi:
+            result += '\t\tMAC addresses learned on interface: {}\n'.format(
+                    interface.macs_learned)
     return Result(task.host, result=result)
 
 
