@@ -418,6 +418,7 @@ def get_interfaces_general_info(task, interface_list=None):
 
 
 def sanitize_interface_list(task, interface_list):
+    '''TODO: no doctsring here'''
     if not interface_list:
         return Result(host=task.host, failed=True,
                       result='No interfaces provided')
@@ -442,3 +443,111 @@ def sanitize_interface_list(task, interface_list):
             host=task.host,
             result='{} interfaces found to be valid ot of {} provided'.format(
                 len(clean_interface_list), len(interface_list)))
+
+
+def get_interfaces_vlan_list(task, interface_list=None):
+    '''Nornir task to get switch interfaces VLAN list and switching mode. Trunk
+    and access modes are supported as of now. In any case PVID grabbed, which
+    is access VLAN for access interface and native VLAN for trunk, and for
+    trunks allowed VLAN list also gathered. If interface list is provided, new
+    list of utils.switch_objects.SwitchInterface will be generated and assigned
+    to task.host['interfaces'], so existed ones would be dropped. Otherwise
+    existed list in task.host['interfaces'] would be used.
+    Arguments:
+        * task - instance or nornir.core.task.Task
+        * interface_list (defaults to None) - list of strings, which represents
+            switch interface names
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
+    def int_not_switching(interface):
+        '''Set switching attributes to None if interface in routed mode.
+        Arguments:
+            * interface - instance of utils.SwitchInterface
+        Returns string that describes the result, i.e. 'interface not
+            switching'
+        '''
+        interface.switch_mode = None
+        interface.pvid = None
+        interface.vlan_list = None
+        return '\tInterface {} is not switching'.format(interface.name)
+
+    def deaggregate_vlans(vlan_list, separator=' '):
+        '''Translate string with VLAN numbers and ranges to list of integers.
+        Arguments:
+            * vlan_list - string that represents VLAN list, grabbed out of
+                switch
+            * separator (defaults to ' ') - character, that separates VLAN
+                numbers on the list
+        Returns list of integers
+        '''
+        new_list = []
+        for num in vlan_list.strip().split(separator):
+            # we grub newline characters on Huawei
+            if not num or num == '\n':
+                continue
+            elif '-' not in num:
+                print(repr(num))
+                new_list.append(int(num))
+            else:
+                new_list.extend(range(int(num.split('-')[0]),
+                                      int(num.split('-')[1])+1))
+        return new_list
+
+    if interface_list:
+        task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
+    connection = task.host.get_connection('netmiko')
+    result = 'Interfaces switching attributes:\n'
+    for interface in task.host['interfaces']:
+        if interface.mode != 'switched':
+            result += int_not_switching(interface)
+            continue
+        switchport_output = connection.send_command(
+                task.host['vendor_vars']['show interface switchport'].format(
+                    interface.name))
+        if task.host['nornir_nos'] == 'nxos':
+            if 'switchport: disabled' in switchport_output.lower():
+                result += int_not_switching(interface)
+                continue
+            interface.switch_mode = re.search(
+                r'Operational Mode: (trunk|access)',
+                switchport_output).group(1)
+            if interface.switch_mode == 'access':
+                interface.pvid = int(re.search(
+                    r'Access Mode VLAN: (\d{1,4})',
+                    switchport_output).group(1))
+                interface.vlan_list = [interface.pvid]
+            elif interface.switch_mode == 'trunk':
+                interface.pvid = int(re.search(
+                    r'Trunking Native Mode VLAN: (\d{1,4})',
+                    switchport_output).group(1))
+                interface.vlan_list = deaggregate_vlans(re.search(
+                    r'Trunking VLANs Allowed: ([0-9,-]+)',
+                    switchport_output).group(1), separator=',')
+        elif task.host['nornir_nos'] == 'huawei_vrpv8':
+            # Huawei return nothing for non switched port
+            if not switchport_output:
+                result += int_not_switching(interface)
+                continue
+            # we need re.S because long VLAN list will be separated by newlines
+            vlan_regex = re.compile(r'''
+            (?:\d{1,3})?GE\d{1,2}/\d{1,2}/\d{1,2}\s+# interface name
+            (access|trunk)\s+# switchport type
+            (\d{1,4})\s+# PVID
+            ((?:\d|--).*)# Allowed VLAN list
+            ''', re.X | re.S)
+            vlan_search = vlan_regex.search(switchport_output)
+            interface.switch_mode = vlan_search.group(1)
+            interface.pvid = int(vlan_search.group(2))
+            if interface.switch_mode == 'access':
+                interface.vlan_list = [interface.pvid]
+            elif interface.switch_mode == 'trunk':
+                interface.vlan_list = deaggregate_vlans(vlan_search.group(3))
+        else:
+            raise UnsupportedNOS('task received unsupported NOS - {}'.format(
+                task.host['nornir_nos']))
+        result += '\tInterface {} is in {} mode, PVID is {}, '.format(
+                interface.name, interface.switch_mode, str(interface.pvid))
+        result += 'allowed VLANs: {}\n'.format(', '.join(str(
+            interface.vlan_list)))
+    return Result(host=task.host, result=result)

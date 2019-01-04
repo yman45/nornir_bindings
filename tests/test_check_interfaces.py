@@ -346,8 +346,6 @@ def test_get_interfaces_general_info_cisco(set_vendor_vars):
 
 
 def test_get_interfaces_general_info_huawei(set_vendor_vars):
-    # there are difficulties with checking speed on Huawei physical interfaces,
-    # so check if it equals 0
     vendor_vars = set_vendor_vars
     interfaces = {
             '40GE1/0/2:1':
@@ -423,3 +421,37 @@ def test_sanitize_interface_list_cisco(set_vendor_vars):
     assert len(task.host['interfaces']) == 4
     assert 'Ethernet1/3/2' not in [x.name for x in task.host['interfaces']]
     assert 'Vlan741' in [x.name for x in task.host['interfaces']]
+
+
+def test_get_interfaces_vlan_list_cisco(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            'Ethernet1/22/2': {'vlan_list': [222], 'switch_mode': 'access'},
+            'Ethernet1/29': {'vlan_list': None, 'switch_mode': None},
+            'Ethernet1/6/3': {'vlan_list': [222, 517, 724, 799],
+                              'switch_mode': 'trunk'}
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(), None, vendor_vars['Cisco Nexus'], None, 'nxos',
+            check_interfaces.get_interfaces_vlan_list,
+            'cisco_show_int_switchport_')
+    do_interface_checks(interfaces, interface_objects)
+
+
+def test_get_interfaces_vlan_list_huawei(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            '10GE1/0/14':
+            {'vlan_list': [642], 'switch_mode': 'access', 'pvid': 642},
+            '100GE1/0/3':
+            {'vlan_list': None, 'switch_mode': None, 'pvid': None},
+            '10GE1/0/7':
+            {'vlan_list':
+                [507, 599, 614, 622, 670, 671, 672, 673, 1333, 1444, 1556],
+                'switch_mode': 'trunk', 'pvid': 670}
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(), None, vendor_vars['Huawei CE'], None,
+            'huawei_vrpv8', check_interfaces.get_interfaces_vlan_list,
+            'huawei_show_int_switchport_')
+    do_interface_checks(interfaces, interface_objects)

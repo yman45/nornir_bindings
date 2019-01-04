@@ -1,0 +1,19 @@
+Name: Ethernet1/22/2
+  Switchport: Enabled
+  Switchport Monitor: Not enabled 
+  Operational Mode: access
+  Access Mode VLAN: 222 (VLAN222)
+  Trunking Native Mode VLAN: 1 (default)
+  Trunking VLANs Allowed: 1-4094
+  Administrative private-vlan primary host-association: none
+  Administrative private-vlan secondary host-association: none
+  Administrative private-vlan primary mapping: none
+  Administrative private-vlan secondary mapping: none
+  Administrative private-vlan trunk native VLAN: none
+  Administrative private-vlan trunk encapsulation: dot1q
+  Administrative private-vlan trunk normal VLANs: none
+  Administrative private-vlan trunk private VLANs: none(0 none) 
+  Operational private-vlan: none
+  Unknown unicast blocked: disabled
+  Unknown multicast blocked: disabled
+  Mac-learning: enabled
