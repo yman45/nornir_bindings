@@ -42,6 +42,8 @@ def check_switch_interfaces(task, interface_names):
              name='Get interfaces IP neighbors (ARP/ND)')
     task.run(task=check_mac_table.get_interfaces_macs,
              name='Get number of MACs learned on interfaces')
+    task.run(task=check_interfaces.get_interfaces_vlan_list,
+             name='Get interfaces switchport configuration')
     result = 'Interfaces state and characteristics:\n'
     for interface in task.host['interfaces']:
         result += '\tInterface {} with "{}" description\n'.format(
@@ -73,6 +75,12 @@ def check_switch_interfaces(task, interface_names):
         if interface.mode == 'switched' or interface.svi:
             result += '\t\tMAC addresses learned on interface: {}\n'.format(
                     interface.macs_learned)
+        if interface.mode == 'switched':
+            result += '\t\tVLANs configuration: {} mode, PVID - {}'.format(
+                    interface.switch_mode, interface.pvid)
+            if interface.switch_mode == 'trunk':
+                result += ', allowed list - {}'.format(interface.vlan_list)
+            result += '\n'
     return Result(task.host, result=result)
 
 

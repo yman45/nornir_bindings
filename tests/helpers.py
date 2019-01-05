@@ -4,6 +4,11 @@ from nornir.core.task import Task
 
 
 class OvercomeHostSlots(Host):
+    '''Class to overcome Nornir 2.0 inventory classes attributes storing with
+    slots, which makes them read-only. This child class adds get_connection
+    method to slots, which makes possible to mock it later.
+    This is probably not a good idea. Maybe all connection handling in this
+    repository is done wrong. But it is working like this now.'''
     __slots__ = ("get_connection")
 
 

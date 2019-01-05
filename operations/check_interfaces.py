@@ -501,7 +501,6 @@ def get_interfaces_vlan_list(task, interface_list=None):
             if not num or num == '\n':
                 continue
             elif '-' not in num:
-                print(repr(num))
                 new_list.append(int(num))
             else:
                 new_list.extend(range(int(num.split('-')[0]),
