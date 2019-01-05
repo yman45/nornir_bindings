@@ -1,0 +1,15 @@
+ Total VPN-Instances configured      : 2
+ Total IPv4 VPN-Instances configured : 0
+ Total IPv6 VPN-Instances configured : 2
+
+ VPN-Instance Name and ID : Star, 1
+  Interface Number : 4
+  Interface list : Vlanif334,
+                   Vlanif422,
+                   100GE1/0/4.215,
+                   100GE1/0/6
+
+ VPN-Instance Name and ID : Galaxy, 2
+  Interface Number : 2
+  Interface list : Vlanif516,
+                   10GE1/0/32

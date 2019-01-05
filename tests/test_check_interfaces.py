@@ -53,7 +53,7 @@ def get_ip_outputs(interfaces, vendor, pad=''):
 
 def create_test_interfaces(interface_names, output, vendor_vars, vrf_name, nos,
                            operation, file_prefix, effect_outputs=None,
-                           up_map=None):
+                           attr_map=None):
     '''Combine create_fake_task with prepare_interfaces helper functions to
     produce task/host filled with interfaces, execute task and return list of
     interfaces back.
@@ -69,10 +69,9 @@ def create_test_interfaces(interface_names, output, vendor_vars, vrf_name, nos,
             outputs, if we need more than one
         * effect_outputs (defaults to None) - list of outputs ready to be used
             as mock side effect
-        * up_map (defaults to None) - dict, which maps interface names to
-            either True or False, if True interface object oper_status
-            attirbute will be set to 'up'; it is required to test speed,
-            duplex, etc. grabbing if interface status was not check first
+        * attr_map (defaults to None) - dict, which maps interface names to
+            set of attributes and corresponding values. This values must be
+            applied to interface objects before executing task.
     Returns:
         * list of utils.switch_objects.SwitchInterface associated with task
             host
@@ -90,10 +89,11 @@ def create_test_interfaces(interface_names, output, vendor_vars, vrf_name, nos,
     fake_task = create_fake_task(output, vendor_vars, vrf_name, nos, operation,
                                  outputs)
     test_interfaces = prepare_interfaces(fake_task, interface_names)
-    if up_map:
+    if attr_map:
         for interface in test_interfaces:
-            if up_map[interface.name]:
-                interface.oper_status = 'up'
+            if interface.name in attr_map:
+                for key, value in attr_map[interface.name].items():
+                    setattr(interface, key, value)
     operation(fake_task)
     return test_interfaces
 
@@ -336,12 +336,12 @@ def test_get_interfaces_general_info_cisco(set_vendor_vars):
                 9000, 'speed': None, 'duplex': None, 'load_in': None,
                 'load_out': None}
             }
-    up_map = {'Ethernet1/3/1': True, 'Ethernet1/31.3000': True,
-              'port-channel2': True, 'Vlan741': True}
+    up_map = {'Ethernet1/3/1': {'oper_status': 'up'},
+              'port-channel2': {'oper_status': 'up'}}
     interface_objects = create_test_interfaces(
             interfaces.keys(), None, vendor_vars['Cisco Nexus'], None, 'nxos',
             check_interfaces.get_interfaces_general_info, 'cisco_show_int_',
-            up_map=up_map)
+            attr_map=up_map)
     do_interface_checks(interfaces, interface_objects)
 
 
@@ -365,12 +365,11 @@ def test_get_interfaces_general_info_huawei(set_vendor_vars):
                 9000, 'speed': None, 'duplex': None, 'load_in': None,
                 'load_out': None}
             }
-    up_map = {'40GE1/0/2:1': False, '10GE1/0/2.3013': True, 'Eth-Trunk0': True,
-              'Vlanif761': True}
+    up_map = {'Eth-Trunk0': {'oper_status': 'up'}}
     interface_objects = create_test_interfaces(
             interfaces.keys(), None, vendor_vars['Huawei CE'], None,
             'huawei_vrpv8', check_interfaces.get_interfaces_general_info,
-            'huawei_show_int_', up_map=up_map)
+            'huawei_show_int_', attr_map=up_map)
     do_interface_checks(interfaces, interface_objects)
 
 
@@ -454,4 +453,53 @@ def test_get_interfaces_vlan_list_huawei(set_vendor_vars):
             interfaces.keys(), None, vendor_vars['Huawei CE'], None,
             'huawei_vrpv8', check_interfaces.get_interfaces_vlan_list,
             'huawei_show_int_switchport_')
+    do_interface_checks(interfaces, interface_objects)
+
+
+def test_interface_to_vrf_match_cisco(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            'Vlan215': {'vrf': 'Star'},
+            'Ethernet1/31.200': {'vrf': 'World'},
+            'Ethernet1/32.144': {'vrf': 'World'},
+            'Vlan1222': {'vrf': 'Galaxy'},
+            'Vlan1': {'vrf': 'default'},
+            'Ethernet1/26': {'vrf': 'default'},
+            'mgmt0': {'vrf': 'management'},
+            'Ethernet1/5/3': {'vrf': None}
+            }
+    mode_map = {'Ethernet1/26': {'mode': 'routed'},
+                'Ethernet1/5/3': {'mode': 'routed'},
+                'mgmt0': {'mode': 'routed'}
+                }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(),
+            get_file_contents('cisco_show_vrf_interfaces_all.txt'),
+            vendor_vars['Cisco Nexus'], None, 'nxos',
+            check_interfaces.get_interfaces_vrf_binding, None,
+            attr_map=mode_map)
+    do_interface_checks(interfaces, interface_objects)
+
+
+def test_interface_to_vrf_match_huawei(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            'Vlanif334': {'vrf': 'Star'},
+            'Vlanif422': {'vrf': 'Star'},
+            '100GE1/0/4.215': {'vrf': 'Star'},
+            '100GE1/0/6': {'vrf': 'Star'},
+            'Vlanif516': {'vrf': 'Galaxy'},
+            '10GE1/0/32': {'vrf': 'Galaxy'},
+            '10GE1/0/5:4': {'vrf': None}
+            }
+    mode_map = {'100GE1/0/6': {'mode': 'routed'},
+                '10GE1/0/32': {'mode': 'routed'},
+                '10GE1/0/5:4': {'mode': 'routed'}
+                }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(),
+            get_file_contents('huawei_show_vrf_interfaces_all.txt'),
+            vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
+            check_interfaces.get_interfaces_vrf_binding, None,
+            attr_map=mode_map)
     do_interface_checks(interfaces, interface_objects)

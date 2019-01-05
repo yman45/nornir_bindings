@@ -44,6 +44,8 @@ def check_switch_interfaces(task, interface_names):
              name='Get number of MACs learned on interfaces')
     task.run(task=check_interfaces.get_interfaces_vlan_list,
              name='Get interfaces switchport configuration')
+    task.run(task=check_interfaces.get_interfaces_vrf_binding,
+             name='Check if interfaces bound to VRF')
     result = 'Interfaces state and characteristics:\n'
     for interface in task.host['interfaces']:
         result += '\tInterface {} with "{}" description\n'.format(
@@ -72,6 +74,9 @@ def check_switch_interfaces(task, interface_names):
             result += '\t\tNumber or neighbors learned (ARP/NDP): '
             result += '{}/{}\n'.format(interface.ipv4_neighbors,
                                        interface.ipv6_neighbors)
+            if interface.vrf:
+                result += '\t\tInterface is bound to VRF {}\n'.format(
+                        interface.vrf)
         if interface.mode == 'switched' or interface.svi:
             result += '\t\tMAC addresses learned on interface: {}\n'.format(
                     interface.macs_learned)

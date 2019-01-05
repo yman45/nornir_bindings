@@ -564,3 +564,57 @@ def get_interfaces_vlan_list(task, interface_list=None):
         result += 'allowed VLANs: {}\n'.format(', '.join(str(
             interface.vlan_list)))
     return Result(host=task.host, result=result)
+
+
+def get_interfaces_vrf_binding(task, interface_list=None):
+    '''Nornir task to identify if interfaces bound to any VRF instance. If
+    interface is in switched mode or not bound to any VRF it's vrf attribute
+    will be set to None.  If interface list is provided, new list of
+    utils.switch_objects.SwitchInterface will be generated and assigned to
+    task.host['interfaces'], so existed ones would be dropped. Otherwise
+    existed list in task.host['interfaces'] would be used.
+    Arguments:
+        * task - instance or nornir.core.task.Task
+        * interface_list (defaults to None) - list of strings, which represents
+            switch interface names
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
+    if interface_list:
+        task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
+    connection = task.host.get_connection('netmiko', None)
+    result = 'Interfaces to VRF bindings:\n'
+    vrf_interfaces = connection.send_command(
+            task.host['vendor_vars']['show vrf interfaces'].format(''))
+    if task.host.platform == 'nxos':
+        vrf_interfaces = '\n'.join(vrf_interfaces.strip().split('\n')[1:])
+        refind = re.findall(
+                r'([0-9A-Za-z/:.]+)\s+([0-9A-Za-z_:.-]+)\s+(\d+|N/A)',
+                vrf_interfaces)
+        vrf_bind_map = {m[0]: m[1] for m in refind}
+    elif task.host.platform == 'huawei_vrpv8':
+        vrf_bind_map = {}
+        vrfs = vrf_interfaces.split('VPN-Instance Name and ID')[1:]
+        for vrf in vrfs:
+            vrf_name = vrf[vrf.index(':')+1:vrf.index(',')].strip()
+            interfaces_list = vrf[vrf.index(
+                'Interface list : ')+17:].split('\n')
+            vrf_bind_map.update({interface.strip(
+                ', '): vrf_name for interface in interfaces_list})
+    else:
+        raise UnsupportedNOS('task received unsupported NOS - {}'.format(
+            task.host.platform))
+    for interface in task.host['interfaces']:
+        if interface.mode == 'switched':
+            interface.vrf = None
+            result += '\tInterface {} is swithed (L2)\n'.format(interface.name)
+            continue
+        if interface.name in vrf_bind_map:
+            interface.vrf = vrf_bind_map[interface.name]
+            result += '\tInterface {} bound to VRF {}\n'.format(interface.name,
+                                                                interface.vrf)
+        else:
+            interface.vrf = None
+            result += '\tInterface {} is not bound to any VRF\n'.format(
+                    interface.name)
+    return Result(host=task.host, result=result)
