@@ -14,7 +14,7 @@ def find_vrf(task):
     Returns:
         * instance of nornir.core.task.Result
     '''
-    connection = task.host.get_connection('netmiko')
+    connection = task.host.get_connection('netmiko', None)
     output = connection.send_command(task.host['vendor_vars']['show vrf'])
     if not re.search(task.host['vendor_vars']['vrf regexp'].format(
             task.host['vrf_name']), output):
@@ -37,18 +37,18 @@ def get_vrf_interfaces(task):
     Returns:
         * instance of nornir.core.task.Result
     '''
-    connection = task.host.get_connection('netmiko')
+    connection = task.host.get_connection('netmiko', None)
     output = connection.send_command(
             task.host['vendor_vars']['show vrf interfaces'].format(
                 task.host['vrf_name']))
-    if task.host['nornir_nos'] == 'nxos':
+    if task.host.platform == 'nxos':
         if task.host['vrf_name'] not in output:
             interfaces_list = []
         else:
             interfaces_list = [SwitchInterface(
                 x.split(' ')[0], mode='routed') for x in output.strip().split(
                     '\n')[1:]]
-    elif task.host['nornir_nos'] == 'huawei_vrpv8':
+    elif task.host.platform == 'huawei_vrpv8':
         if 'Interface Number : 0' in output:
             interfaces_list = []
         else:
@@ -60,7 +60,7 @@ def get_vrf_interfaces(task):
     else:
         raise UnsupportedNOS(
                 'task received unsupported NOS - {}'.format(
-                    task.host['nornir_nos']))
+                    task.host.platform))
     task.host['interfaces'] = interfaces_list
     if len(task.host['interfaces']) == 0:
         return Result(host=task.host, failed=True,
@@ -102,7 +102,7 @@ def check_vrf_bgp_neighbors(task, af='both'):
             neighbor = host['bgp_neighbors'][address]
         return neighbor
 
-    connection = task.host.get_connection('netmiko')
+    connection = task.host.get_connection('netmiko', None)
     result = 'BGP neighbors in VRF {}:\n'.format(task.host['vrf_name'])
     if 'bgp_neighbors' not in task.host.keys():
         task.host['bgp_neighbors'] = {}
@@ -123,7 +123,7 @@ def check_vrf_bgp_neighbors(task, af='both'):
     else:
         v6_output = None
     for output, af_name in zip([v4_output, v6_output], ['v4', 'v6']):
-        if task.host['nornir_nos'] == 'nxos':
+        if task.host.platform == 'nxos':
             if not output or 'BGP neighbor is' not in output:
                 continue
             neighbors = output.strip().split('BGP neighbor is ')
@@ -155,7 +155,7 @@ def check_vrf_bgp_neighbors(task, af='both'):
                 new_af.sent_routes = int(re.search(
                     r'(\d+) sent paths', routes_count).group(1))
                 n_record.af['ip{}'.format(af_name)] = new_af
-        elif task.host['nornir_nos'] == 'huawei_vrpv8':
+        elif task.host.platform == 'huawei_vrpv8':
             if not output or 'BGP Peer is' not in output:
                 continue
             neighbors = output.strip().split('BGP Peer is ')
@@ -186,7 +186,7 @@ def check_vrf_bgp_neighbors(task, af='both'):
         else:
             raise UnsupportedNOS(
                     'task received unsupported NOS - {}'.format(
-                        task.host['nornir_nos']))
+                        task.host.platform))
     for neighbor in task.host['bgp_neighbors'].values():
         result += '\t{} AS {} (router ID {}) of type {} is {}'.format(
                 neighbor.address, neighbor.as_number, neighbor.router_id,

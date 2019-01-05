@@ -1,5 +1,5 @@
 import json
-from nornir.core import InitNornir
+from nornir import InitNornir
 from nornir.core.task import Result
 from nornir.plugins.functions.text import print_result
 from utils.nornir_utils import nornir_set_credentials
@@ -20,13 +20,13 @@ def check_switch_interfaces(task, interface_names):
     '''
     with open('operations/vendor_vars.json', 'r', encoding='utf-8') as jsonf:
         vendor_vars = json.load(jsonf)
-    if task.host['nornir_nos'] == 'nxos':
+    if task.host.platform == 'nxos':
         task.host['vendor_vars'] = vendor_vars['Cisco Nexus']
-    elif task.host['nornir_nos'] == 'huawei_vrpv8':
+    elif task.host.platform == 'huawei_vrpv8':
         task.host['vendor_vars'] = vendor_vars['Huawei CE']
     else:
         raise UnsupportedNOS('{} is unsupported or bogus'.format(
-            task.host['nornir_nos']))
+            task.host.platform))
     task.run(task=check_interfaces.sanitize_interface_list,
              name='Check provided interface names to be valid',
              interface_list=interface_names)

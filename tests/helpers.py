@@ -3,6 +3,10 @@ from nornir.core.inventory import Host
 from nornir.core.task import Task
 
 
+class OvercomeHostSlots(Host):
+    __slots__ = ("get_connection")
+
+
 def get_file_contents(file_name):
     '''Open file with CLI outputs and return its contents.
     Arguments:
@@ -39,10 +43,10 @@ def create_fake_task(output, vendor_vars, vrf_name, nos, test_obj,
         connection.send_command = Mock(return_value=output)
     else:
         connection.send_command = Mock(side_effect=effect)
-    host = Host('test-host')
+    host = OvercomeHostSlots('test-host')
     host['vendor_vars'] = vendor_vars
     host['vrf_name'] = vrf_name
-    host['nornir_nos'] = nos
+    host.platform = nos
     host.get_connection = Mock(return_value=connection)
     fake_task = Task(test_obj)
     fake_task.host = host

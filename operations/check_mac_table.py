@@ -41,7 +41,7 @@ def get_interfaces_macs(task, interface_list=None):
                 nos))
     if interface_list:
         task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
-    connection = task.host.get_connection('netmiko')
+    connection = task.host.get_connection('netmiko', None)
     result = 'MACs learned on interfaces:\n'
     for interface in task.host['interfaces']:
         if interface.svi:
@@ -49,7 +49,7 @@ def get_interfaces_macs(task, interface_list=None):
                                interface.name).group(1)
             mac_table = connection.send_command(task.host['vendor_vars'][
                 'show mac table vlan'].format(vlan_id))
-            interface.macs_learned = count_macs(task.host['nornir_nos'],
+            interface.macs_learned = count_macs(task.host.platform,
                                                 mac_table)
         elif interface.mode == 'routed':
             interface.macs_learned = 0
@@ -59,7 +59,7 @@ def get_interfaces_macs(task, interface_list=None):
             mac_table = connection.send_command(
                     task.host['vendor_vars'][
                         'show mac table interface'].format(interface.name))
-            interface.macs_learned = count_macs(task.host['nornir_nos'],
+            interface.macs_learned = count_macs(task.host.platform,
                                                 mac_table)
         result += '\tInterface {} learned {} MACs\n'.format(
                 interface.name, interface.macs_learned)

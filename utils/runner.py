@@ -5,7 +5,7 @@ import click
 from importlib import import_module
 from ruamel.yaml import YAML
 from ruamel.yaml.scanner import ScannerError
-from nornir.core import InitNornir
+from nornir import InitNornir
 from nornir.plugins.functions.text import print_result
 from utils.nornir_utils import nornir_set_credentials
 from app_exception import AppException
@@ -109,7 +109,7 @@ def get_inventory_groups(config):
     yaml = YAML()
     with open(config, 'r', encoding='utf-8') as config_file:
         config_yaml = yaml.load(config_file)
-    group_inventory = config_yaml['SimpleInventory']['group_file']
+    group_inventory = config_yaml['inventory']['options']['group_file']
     with open(group_inventory, 'r', encoding='utf-8') as group_file:
         groups = yaml.load(group_file)
     return groups.keys()
@@ -163,11 +163,11 @@ def add_to_inventory(config, hostname, ip, groups, no_such_group_ignore=False):
             cleaned_groups.append(group)
     if len(cleaned_groups) == 0:
         raise NoGroupsHost('All configured groups not exist')
-    host = {hostname: {"nornir_host": ip, "groups": cleaned_groups}}
+    host = {hostname: {"hostname": ip, "groups": cleaned_groups}}
     yaml = YAML()
     with open(config, 'r', encoding='utf-8') as config_file:
         config_yaml = yaml.load(config_file)
-    host_inventory = config_yaml['SimpleInventory']['host_file']
+    host_inventory = config_yaml['inventory']['options']['host_file']
     yaml.indent(mapping=2, sequence=2, offset=2)
     with open(host_inventory, 'a', encoding='utf-8') as host_file:
         yaml.dump(host, host_file)
@@ -186,8 +186,8 @@ def check_config(config):
         yaml = YAML()
         with open(config, 'r', encoding='utf-8') as config_file:
             configuration = yaml.load(config_file)
-        hosts = configuration['SimpleInventory']['host_file']
-        groups = configuration['SimpleInventory']['group_file']
+        hosts = configuration['inventory']['options']['host_file']
+        groups = configuration['inventory']['options']['group_file']
         # test host and group files for syntax by loading them
         with open(hosts, 'r', encoding='utf-8') as host_file:
             yaml.load(host_file)

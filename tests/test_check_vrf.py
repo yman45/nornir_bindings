@@ -60,7 +60,7 @@ def test_get_vrf_interfaces(set_vendor_vars):
     result = check_vrf_status.get_vrf_interfaces(task_huawei_no_int)
     assert len(task_huawei_no_int.host['interfaces']) == 0
     assert result.failed is True
-    task_huawei_no_int.host['nornir_nos'] = 'eos'
+    task_huawei_no_int.host.platform = 'eos'
     with pytest.raises(UnsupportedNOS):
         check_vrf_status.get_vrf_interfaces(task_huawei_no_int)
 

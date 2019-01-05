@@ -14,5 +14,5 @@ def nornir_set_credentials(nornir, username=None):
         username = getpwuid(getuid())[0]
     password = getpass.getpass()
     for host in nornir.inventory.hosts.values():
-        host.data["nornir_username"] = username
-        host.data["nornir_password"] = password
+        host.username = username
+        host.password = password

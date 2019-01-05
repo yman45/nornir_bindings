@@ -68,12 +68,12 @@ def check_interfaces_status(task, interface_list=None):
     '''
     if interface_list:
         task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
-    connection = task.host.get_connection('netmiko')
+    connection = task.host.get_connection('netmiko', None)
     result = 'Interfaces status:\n'
     interfaces_brief_output = connection.send_command(task.host['vendor_vars'][
         'show interfaces brief'])
     for interface in task.host['interfaces']:
-        if task.host['nornir_nos'] == 'nxos':
+        if task.host.platform == 'nxos':
             interface_name = cisco_compact_name(interface.name)
         else:
             interface_name = interface.name
@@ -81,7 +81,7 @@ def check_interfaces_status(task, interface_list=None):
         # 'find' will cover end of output (last line) situations
         brief_line_end = interfaces_brief_output.find('\n', brief_line_start)
         brief_line = interfaces_brief_output[brief_line_start:brief_line_end]
-        if task.host['nornir_nos'] == 'nxos':
+        if task.host.platform == 'nxos':
             if ' up ' in brief_line:
                 interface.admin_status = 'up'
                 interface.oper_status = 'up'
@@ -91,7 +91,7 @@ def check_interfaces_status(task, interface_list=None):
             else:
                 interface.admin_status = 'up'
                 interface.oper_status = 'down'
-        elif task.host['nornir_nos'] == 'huawei_vrpv8':
+        elif task.host.platform == 'huawei_vrpv8':
             phy_status = re.search(r'{}(\(.+\))?\s+(\*?(down|up))'.format(
                 interface.name), brief_line).group(2)
             if phy_status == '*down':
@@ -105,7 +105,7 @@ def check_interfaces_status(task, interface_list=None):
                 interface.oper_status = 'up'
         else:
             raise UnsupportedNOS('task received unsupported NOS - {}'.format(
-                task.host['nornir_nos']))
+                task.host.platform))
         result += '\tInterface {} is in {}/{} state\n'.format(
                 interface.name, interface.admin_status, interface.oper_status)
     return Result(host=task.host, result=result)
@@ -128,7 +128,7 @@ def get_interfaces_ip_addresses(task, interface_list=None):
         task.host['interfaces'] = [SwitchInterface(
             x, mode='routed') for x in interface_list]
     result = 'IP addresses on interfaces:\n'
-    connection = task.host.get_connection('netmiko')
+    connection = task.host.get_connection('netmiko', None)
     for interface in task.host['interfaces']:
         ipv4_status = connection.send_command(
             task.host['vendor_vars']['show ipv4 interface'].format(
@@ -136,7 +136,7 @@ def get_interfaces_ip_addresses(task, interface_list=None):
         ipv6_status = connection.send_command(
             task.host['vendor_vars']['show ipv6 interface'].format(
                 interface.name))
-        if task.host['nornir_nos'] == 'nxos':
+        if task.host.platform == 'nxos':
             if 'IP is disabled' not in ipv4_status:
                 pattern = re.compile(
                         r'IP address: '
@@ -167,7 +167,7 @@ def get_interfaces_ip_addresses(task, interface_list=None):
                     for address in match:
                         interface.ipv6_addresses.append(IPAddress(
                             address[0], address[1], True))
-        elif task.host['nornir_nos'] == 'huawei_vrpv8':
+        elif task.host.platform == 'huawei_vrpv8':
             if 'Internet Address is' in ipv4_status:
                 pattern = re.compile(r'Internet Address is '
                                      r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
@@ -190,7 +190,7 @@ def get_interfaces_ip_addresses(task, interface_list=None):
                         address[0], address[1], True))
         else:
             raise UnsupportedNOS('task received unsupported NOS - {}'.format(
-                task.host['nornir_nos']))
+                task.host.platform))
         result += 'Interface {} IP addresses:\n'.format(interface.name)
         if len(interface.ipv4_addresses) == 0:
             result += '\tNo IPv4 addresses\n'
@@ -221,7 +221,7 @@ def get_interfaces_ip_neighbors(task, interface_list=None):
     if interface_list:
         task.host['interfaces'] = [SwitchInterface(
             x, mode='routed') for x in interface_list]
-    connection = task.host.get_connection('netmiko')
+    connection = task.host.get_connection('netmiko', None)
     result = 'IP neighbors learned on interfaces:\n'
     for interface in task.host['interfaces']:
         result += '\tInterface {} '.format(interface.name)
@@ -239,13 +239,13 @@ def get_interfaces_ip_neighbors(task, interface_list=None):
         ipv6_neighbors = connection.send_command(
             task.host['vendor_vars']['show ipv6 neighbors interface'].format(
                 interface.name, vrf_name))
-        if task.host['nornir_nos'] == 'nxos':
+        if task.host.platform == 'nxos':
             search_line = r'Total number of entries:\s+(\d+)'
-        elif task.host['nornir_nos'] == 'huawei_vrpv8':
+        elif task.host.platform == 'huawei_vrpv8':
             search_line = r'Dynamic:(?:\s+)?(\d+)'
         else:
             raise UnsupportedNOS('task received unsupported NOS - {}'.format(
-                task.host['nornir_nos']))
+                task.host.platform))
         # Huawei returns empty output for 'down' interfaces
         if not ipv4_neighbors:
             interface.ipv4_neighbors = 0
@@ -277,9 +277,9 @@ def get_interfaces_mode(task, interface_list=None):
     '''
     if interface_list:
         task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
-    connection = task.host.get_connection('netmiko')
+    connection = task.host.get_connection('netmiko', None)
     result = 'Interfaces mode:\n'
-    if task.host['nornir_nos'] == 'nxos':
+    if task.host.platform == 'nxos':
         interfaces_brief_output = connection.send_command(task.host[
             'vendor_vars']['show interfaces brief'])
     for interface in task.host['interfaces']:
@@ -287,7 +287,7 @@ def get_interfaces_mode(task, interface_list=None):
             result += 'Interface {} mode: routed (by interface type)'.format(
                     interface.name)
             continue
-        if task.host['nornir_nos'] == 'nxos':
+        if task.host.platform == 'nxos':
             interface_name = cisco_compact_name(interface.name)
             brief_line_start = interfaces_brief_output.index(interface_name)
             # 'find' will cover end of output (last line) situations
@@ -302,7 +302,7 @@ def get_interfaces_mode(task, interface_list=None):
             else:
                 raise ValueError('Can not determine interface {} mode'.format(
                     interface.name))
-        elif task.host['nornir_nos'] == 'huawei_vrpv8':
+        elif task.host.platform == 'huawei_vrpv8':
             interface_full_output = connection.send_command(task.host[
                 'vendor_vars']['show interface'].format(interface.name))
             if 'Switch Port' in interface_full_output:
@@ -314,7 +314,7 @@ def get_interfaces_mode(task, interface_list=None):
                     interface.name))
         else:
             raise UnsupportedNOS('task received unsupported NOS - {}'.format(
-                task.host['nornir_nos']))
+                task.host.platform))
         result += '\tInterface {} mode: {}'.format(interface.name,
                                                    interface.mode)
     return Result(host=task.host, result=result)
@@ -335,13 +335,13 @@ def get_interfaces_general_info(task, interface_list=None):
     '''
     if interface_list:
         task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
-    connection = task.host.get_connection('netmiko')
+    connection = task.host.get_connection('netmiko', None)
     result = 'Interfaces characteristics:\n'
     for interface in task.host['interfaces']:
         interface_full_output = connection.send_command(
                 task.host['vendor_vars']['show interface'].format(
                     interface.name))
-        if task.host['nornir_nos'] == 'nxos':
+        if task.host.platform == 'nxos':
             if 'Description:' not in interface_full_output:
                 interface.description = None
             else:
@@ -370,7 +370,7 @@ def get_interfaces_general_info(task, interface_list=None):
             interface.load_out = convert_load(re.search(
                 r'output rate (\d+) bits/sec,',
                 interface_full_output).group(1))
-        elif task.host['nornir_nos'] == 'huawei_vrpv8':
+        elif task.host.platform == 'huawei_vrpv8':
             descr = re.search(r'Description: (.+)\n', interface_full_output)
             interface.description = descr.group(1) if descr else None
             interface.mac_address = convert_mac_address(re.search(
@@ -407,7 +407,7 @@ def get_interfaces_general_info(task, interface_list=None):
                 interface_full_output).group(1))
         else:
             raise UnsupportedNOS('task received unsupported NOS - {}'.format(
-                task.host['nornir_nos']))
+                task.host.platform))
         result += '\tInterface {} / {}: MAC address {}, MTU {} bytes,'.format(
                 interface.name, interface.description, interface.mac_address,
                 interface.mtu)
@@ -439,7 +439,7 @@ def sanitize_interface_list(task, interface_list):
     interface_list = [x.strip() for x in interface_list.split(',')]
     clean_interface_list = []
     for interface in interface_list:
-        connection = task.host.get_connection('netmiko')
+        connection = task.host.get_connection('netmiko', None)
         show_interface = connection.send_command(
                 task.host['vendor_vars']['show interface'].format(interface))
         # interface names can be found in a similar way for both NX-OS and
@@ -510,7 +510,7 @@ def get_interfaces_vlan_list(task, interface_list=None):
 
     if interface_list:
         task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
-    connection = task.host.get_connection('netmiko')
+    connection = task.host.get_connection('netmiko', None)
     result = 'Interfaces switching attributes:\n'
     for interface in task.host['interfaces']:
         if interface.mode != 'switched':
@@ -519,7 +519,7 @@ def get_interfaces_vlan_list(task, interface_list=None):
         switchport_output = connection.send_command(
                 task.host['vendor_vars']['show interface switchport'].format(
                     interface.name))
-        if task.host['nornir_nos'] == 'nxos':
+        if task.host.platform == 'nxos':
             if 'switchport: disabled' in switchport_output.lower():
                 result += int_not_switching(interface)
                 continue
@@ -538,7 +538,7 @@ def get_interfaces_vlan_list(task, interface_list=None):
                 interface.vlan_list = deaggregate_vlans(re.search(
                     r'Trunking VLANs Allowed: ([0-9,-]+)',
                     switchport_output).group(1), separator=',')
-        elif task.host['nornir_nos'] == 'huawei_vrpv8':
+        elif task.host.platform == 'huawei_vrpv8':
             # Huawei return nothing for non switched port
             if not switchport_output:
                 result += int_not_switching(interface)
@@ -559,7 +559,7 @@ def get_interfaces_vlan_list(task, interface_list=None):
                 interface.vlan_list = deaggregate_vlans(vlan_search.group(3))
         else:
             raise UnsupportedNOS('task received unsupported NOS - {}'.format(
-                task.host['nornir_nos']))
+                task.host.platform))
         result += '\tInterface {} is in {} mode, PVID is {}, '.format(
                 interface.name, interface.switch_mode, str(interface.pvid))
         result += 'allowed VLANs: {}\n'.format(', '.join(str(

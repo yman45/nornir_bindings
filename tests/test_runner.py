@@ -9,48 +9,56 @@ def tmp_inventory_files(tmp_path):
     inv_groups = tmp_path / "groups.yml"
     test_config = '''
 ---
-num_workers: 10
-inventory: nornir.plugins.inventory.simple.SimpleInventory
-SimpleInventory:
-  host_file: "{}"
-  group_file: "{}"
+core:
+    num_workers: 10
+inventory:
+  plugin: nornir.plugins.inventory.simple.SimpleInventory
+  options:
+    host_file: "{}"
+    group_file: "{}"
 '''.format(inv_hosts, inv_groups)
     hosts = '''
 ---
 cisco-dc1:
-  nornir_host: 10.1.1.1
+  hostname: 10.1.1.1
   groups:
     - dc_1
     - cisco_tors
 huawei-dc2:
-  nornir_host: 10.2.2.2
+  hostname: 10.2.2.2
   groups:
     - dc_2
     - huawei_tors
 '''
     groups = '''
 ---
-defaults:
-  domain: grt.dc
-  asn: 65666
+global:
+  data:
+    domain: grt.dc
+    asn: 65666
 dc_1:
-  dc_name: one_dc
+  data:
+    dc_name: one_dc
 dc_2:
-  dc_name: two_dc
+  data:
+    dc_name: two_dc
 tors:
-  role: tor_switch
+  data:
+    role: tor_switch
 cisco_tors:
   groups:
     - tors
-  vendor: cisco
-  lineup: nexus
-  nornir_nos: nxos
+  platform: nxos
+  data:
+    vendor: cisco
+    lineup: nexus
 huawei_tors:
   groups:
     - tors
-  vendor: huawei
-  lineup: ce
-  nornir_nos: huawei_vrpv8
+  platform: huawei_vrpv8
+  data:
+    vendor: huawei
+    lineup: ce
 '''
     conf.write_text(test_config)
     inv_hosts.write_text(hosts)
