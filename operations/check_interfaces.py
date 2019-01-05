@@ -418,7 +418,21 @@ def get_interfaces_general_info(task, interface_list=None):
 
 
 def sanitize_interface_list(task, interface_list):
-    '''TODO: no doctsring here'''
+    '''Nornir task to clean up interface list, bound to task host or provided
+    separately as an argument. User input interface names, which may be
+    incorrect (misspeled or non existent on a switch) or in shortened form.
+    This task will remove incorrect names and expand correct ones into full
+    form. If interface list is provided, new list of
+    utils.switch_objects.SwitchInterface will be generated and assigned
+    to task.host['interfaces'], so existed ones would be dropped. Otherwise
+    existed list in task.host['interfaces'] would be used.
+    Arguments:
+        * task - instance or nornir.core.task.Task
+        * interface_list (defaults to None) - list of strings, which represents
+            switch interface names
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
     if not interface_list:
         return Result(host=task.host, failed=True,
                       result='No interfaces provided')
