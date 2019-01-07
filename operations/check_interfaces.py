@@ -544,7 +544,7 @@ def get_interfaces_vlan_list(task, interface_list=None):
                 continue
             # we need re.S because long VLAN list will be separated by newlines
             vlan_regex = re.compile(r'''
-            (?:\d{1,3})?GE\d{1,2}/\d{1,2}/\d{1,2}\s+# interface name
+            (?:\d{1,3})?GE\d{1,2}/\d{1,2}/\d{1,2}(?::\d)?\s+# interface name
             (access|trunk)\s+# switchport type
             (\d{1,4})\s+# PVID
             ((?:\d|--).*)# Allowed VLAN list
