@@ -618,3 +618,73 @@ def get_interfaces_vrf_binding(task, interface_list=None):
             result += '\tInterface {} is not bound to any VRF\n'.format(
                     interface.name)
     return Result(host=task.host, result=result)
+
+
+def find_lag_hierarchy(task, interface_list=None):
+    '''Nornir task to identify LAG relationship, or which interface is member
+    of which LAG. For LAG list of members recorded, or just empty list. For
+    physical interfaces it's either a string (LAG inteface name) or None. If
+    interface list is provided, new list of
+    utils.switch_objects.SwitchInterface will be generated and assigned to
+    task.host['interfaces'], so existed ones would be dropped. Otherwise
+    existed list in task.host['interfaces'] would be used.
+    Arguments:
+        * task - instance or nornir.core.task.Task
+        * interface_list (defaults to None) - list of strings, which represents
+            switch interface names
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
+    if interface_list:
+        task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
+    connection = task.host.get_connection('netmiko', None)
+    result = 'LAG interfaces relationship:\n'
+    int_brief_output = connection.send_command(
+            task.host['vendor_vars']['show interfaces brief'])
+    hier = {}
+    if task.host.platform == 'nxos':
+        in_lag_ints = re.findall(r'^(Eth[0-9/]+).+(\d+)$', int_brief_output,
+                                 re.M)
+        for match in in_lag_ints:
+            lag_name = 'port-channel' + match[1]
+            if lag_name not in hier:
+                hier[lag_name] = []
+            hier[lag_name].append(match[0].replace('Eth', 'Ethernet'))
+    elif task.host.platform == 'huawei_vrpv8':
+        lags_start = int_brief_output.find('Eth-Trunk')
+        if lags_start != -1:
+            for line in int_brief_output[lags_start:].split('\n'):
+                if line.startswith('Eth-Trunk'):
+                    lag = line.split(' ')[0]
+                    hier[lag] = []
+                elif line.startswith(' '):
+                    hier[lag].append(line.strip().split(' ')[0])
+                else:
+                    break
+    else:
+        raise UnsupportedNOS('task received unsupported NOS - {}'.format(
+            task.host.platform))
+    if not hier:
+        result = 'No LAG present on a device'
+    else:
+        for int_ in task.host['interfaces']:
+            if int_.svi or int_.subinterface:
+                result += "\tInterface {} can't be in LAG\n".format(int_.name)
+                continue
+            elif int_.lag:
+                int_.members = hier[int_.name] if int_.name in hier else []
+                result += "\tLAG {} has members {}\n".format(int_.name,
+                                                             int_.members)
+            else:
+                int_.member = None
+                for lag in hier:
+                    if int_.name in hier[lag]:
+                        int_.member = lag
+                        break
+                if int_.member:
+                    result += "\tInterface {} is member of {}".format(
+                            int_.name, int_.member)
+                else:
+                    result += "\tInterface {} is not member of any LAG".format(
+                            int_.name)
+    return Result(host=task.host, result=result)

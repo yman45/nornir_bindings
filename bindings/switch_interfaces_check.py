@@ -46,6 +46,8 @@ def check_switch_interfaces(task, interface_names):
              name='Get interfaces switchport configuration')
     task.run(task=check_interfaces.get_interfaces_vrf_binding,
              name='Check if interfaces bound to VRF')
+    task.run(task=check_interfaces.find_lag_hierarchy,
+             name='Discover LAG relationships')
     result = 'Interfaces state and characteristics:\n'
     for interface in task.host['interfaces']:
         result += '\tInterface {} with "{}" description\n'.format(
@@ -86,6 +88,13 @@ def check_switch_interfaces(task, interface_names):
             if interface.switch_mode == 'trunk':
                 result += ', allowed list - {}'.format(interface.vlan_list)
             result += '\n'
+        if interface.lag:
+            result += '\t\tLAG members are: [{}]\n'.format(', '.join(
+                interface.members))
+        elif not interface.svi and not interface.subinterface:
+            if interface.member:
+                result += '\t\tInterface is a member of LAG: {}\n'.format(
+                        interface.member)
     return Result(task.host, result=result)
 
 

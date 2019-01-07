@@ -456,7 +456,7 @@ def test_get_interfaces_vlan_list_huawei(set_vendor_vars):
     do_interface_checks(interfaces, interface_objects)
 
 
-def test_interface_to_vrf_match_cisco(set_vendor_vars):
+def test_get_interfaces_vrf_binding_cisco(set_vendor_vars):
     vendor_vars = set_vendor_vars
     interfaces = {
             'Vlan215': {'vrf': 'Star'},
@@ -481,7 +481,7 @@ def test_interface_to_vrf_match_cisco(set_vendor_vars):
     do_interface_checks(interfaces, interface_objects)
 
 
-def test_interface_to_vrf_match_huawei(set_vendor_vars):
+def test_get_interfaces_vrf_binding_huawei(set_vendor_vars):
     vendor_vars = set_vendor_vars
     interfaces = {
             'Vlanif334': {'vrf': 'Star'},
@@ -502,4 +502,38 @@ def test_interface_to_vrf_match_huawei(set_vendor_vars):
             vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
             check_interfaces.get_interfaces_vrf_binding, None,
             attr_map=mode_map)
+    do_interface_checks(interfaces, interface_objects)
+
+
+def test_find_lag_hierarchy_cisco(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            'port-channel1': {'members': ['Ethernet1/32']},
+            'port-channel2': {'members': ['Ethernet1/31']},
+            'Ethernet1/31': {'member': 'port-channel2'},
+            'Ethernet1/32': {'member': 'port-channel1'}
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(),
+            get_file_contents('cisco_show_int_brief.txt'),
+            vendor_vars['Cisco Nexus'], None, 'nxos',
+            check_interfaces.find_lag_hierarchy, None)
+    do_interface_checks(interfaces, interface_objects)
+
+
+def test_find_lag_hierarchy_huawei(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            'Eth-Trunk1': {'members': ['40GE1/0/17', '40GE1/0/19']},
+            'Eth-Trunk2': {'members': ['40GE1/0/18', '40GE1/0/20']},
+            '40GE1/0/17': {'member': 'Eth-Trunk1'},
+            '40GE1/0/18': {'member': 'Eth-Trunk2'},
+            '40GE1/0/19': {'member': 'Eth-Trunk1'},
+            '40GE1/0/20': {'member': 'Eth-Trunk2'},
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(),
+            get_file_contents('huawei_show_int_brief.txt'),
+            vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
+            check_interfaces.find_lag_hierarchy, None)
     do_interface_checks(interfaces, interface_objects)
