@@ -664,27 +664,26 @@ def find_lag_hierarchy(task, interface_list=None):
     else:
         raise UnsupportedNOS('task received unsupported NOS - {}'.format(
             task.host.platform))
+    for int_ in task.host['interfaces']:
+        if int_.svi or int_.subinterface:
+            result += "\tInterface {} can't be in LAG\n".format(int_.name)
+            continue
+        elif int_.lag:
+            int_.members = hier[int_.name] if int_.name in hier else []
+            result += "\tLAG {} has members {}\n".format(int_.name,
+                                                         int_.members)
+        else:
+            int_.member = None
+            for lag in hier:
+                if int_.name in hier[lag]:
+                    int_.member = lag
+                    break
+            if int_.member:
+                result += "\tInterface {} is member of {}".format(int_.name,
+                                                                  int_.member)
+            else:
+                result += "\tInterface {} is not member of any LAG".format(
+                        int_.name)
     if not hier:
         result = 'No LAG present on a device'
-    else:
-        for int_ in task.host['interfaces']:
-            if int_.svi or int_.subinterface:
-                result += "\tInterface {} can't be in LAG\n".format(int_.name)
-                continue
-            elif int_.lag:
-                int_.members = hier[int_.name] if int_.name in hier else []
-                result += "\tLAG {} has members {}\n".format(int_.name,
-                                                             int_.members)
-            else:
-                int_.member = None
-                for lag in hier:
-                    if int_.name in hier[lag]:
-                        int_.member = lag
-                        break
-                if int_.member:
-                    result += "\tInterface {} is member of {}".format(
-                            int_.name, int_.member)
-                else:
-                    result += "\tInterface {} is not member of any LAG".format(
-                            int_.name)
     return Result(host=task.host, result=result)

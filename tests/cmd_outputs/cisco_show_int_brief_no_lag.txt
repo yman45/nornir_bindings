@@ -1,0 +1,124 @@
+
+--------------------------------------------------------------------------------
+Ethernet      VLAN   Type Mode   Status  Reason                   Speed     Port
+Interface                                                                   Ch #
+--------------------------------------------------------------------------------
+Eth1/1/1      641     eth  trunk  up      none                        10G(D) --
+Eth1/1/2      641     eth  trunk  up      none                        10G(D) --
+Eth1/1/3      641     eth  access up      none                        10G(D) --
+Eth1/1/4      641     eth  trunk  up      none                        10G(D) --
+Eth1/2/1      641     eth  trunk  up      none                        10G(D) --
+Eth1/2/2      641     eth  trunk  up      none                        10G(D) --
+Eth1/2/3      604     eth  trunk  up      none                        10G(D) --
+Eth1/2/4      604     eth  trunk  up      none                        10G(D) --
+Eth1/3/1      604     eth  trunk  up      none                        10G(D) --
+Eth1/3/2      604     eth  trunk  up      none                        10G(D) --
+Eth1/3/3      604     eth  trunk  up      none                        10G(D) --
+Eth1/3/4      604     eth  trunk  up      none                        10G(D) --
+Eth1/4/1      604     eth  trunk  up      none                        10G(D) --
+Eth1/4/2      604     eth  trunk  up      none                        10G(D) --
+Eth1/4/3      604     eth  trunk  up      none                        10G(D) --
+Eth1/4/4      604     eth  trunk  up      none                        10G(D) --
+Eth1/5/1      604     eth  trunk  up      none                        10G(D) --
+Eth1/5/2      604     eth  trunk  up      none                        10G(D) --
+Eth1/5/3      604     eth  trunk  up      none                        10G(D) --
+Eth1/5/4      604     eth  trunk  up      none                        10G(D) --
+Eth1/6/1      604     eth  trunk  up      none                        10G(D) --
+Eth1/6/2      604     eth  trunk  up      none                        10G(D) --
+Eth1/6/3      604     eth  trunk  up      none                        10G(D) --
+Eth1/6/4      604     eth  trunk  up      none                        10G(D) --
+Eth1/7/1      604     eth  trunk  up      none                        10G(D) --
+Eth1/7/2      604     eth  trunk  up      none                        10G(D) --
+Eth1/7/3      604     eth  trunk  up      none                        10G(D) --
+Eth1/7/4      604     eth  trunk  up      none                        10G(D) --
+Eth1/8/1      604     eth  trunk  up      none                        10G(D) --
+Eth1/8/2      604     eth  trunk  up      none                        10G(D) --
+Eth1/8/3      604     eth  trunk  up      none                        10G(D) --
+Eth1/8/4      604     eth  trunk  up      none                        10G(D) --
+Eth1/9/1      604     eth  trunk  up      none                        10G(D) --
+Eth1/9/2      604     eth  trunk  up      none                        10G(D) --
+Eth1/9/3      604     eth  trunk  up      none                        10G(D) --
+Eth1/9/4      604     eth  trunk  up      none                        10G(D) --
+Eth1/10/1     604     eth  trunk  up      none                        10G(D) --
+Eth1/10/2     604     eth  trunk  up      none                        10G(D) --
+Eth1/10/3     604     eth  trunk  up      none                        10G(D) --
+Eth1/10/4     604     eth  trunk  up      none                        10G(D) --
+Eth1/11/1     604     eth  trunk  up      none                        10G(D) --
+Eth1/11/2     604     eth  access down    Administratively down       10G(D) --
+Eth1/11/3     604     eth  access down    Link not connected          10G(D) --
+Eth1/11/4     604     eth  access down    Link not connected          10G(D) --
+Eth1/12/1     604     eth  trunk  up      none                        10G(D) --
+Eth1/12/2     604     eth  access down    Link not connected          10G(D) --
+Eth1/12/3     604     eth  access down    Link not connected          10G(D) --
+Eth1/12/4     604     eth  access down    Link not connected          10G(D) --
+Eth1/13/1     604     eth  trunk  up      none                        10G(D) --
+Eth1/13/2     604     eth  trunk  up      none                        10G(D) --
+Eth1/13/3     604     eth  trunk  up      none                        10G(D) --
+Eth1/13/4     604     eth  trunk  up      none                        10G(D) --
+Eth1/14/1     604     eth  trunk  up      none                        10G(D) --
+Eth1/14/2     604     eth  trunk  up      none                        10G(D) --
+Eth1/14/3     604     eth  trunk  up      none                        10G(D) --
+Eth1/14/4     604     eth  trunk  up      none                        10G(D) --
+Eth1/15/1     604     eth  trunk  up      none                        10G(D) --
+Eth1/15/2     604     eth  trunk  up      none                        10G(D) --
+Eth1/15/3     604     eth  trunk  up      none                        10G(D) --
+Eth1/15/4     604     eth  trunk  up      none                        10G(D) --
+Eth1/16/1     604     eth  trunk  up      none                        10G(D) --
+Eth1/16/2     604     eth  trunk  up      none                        10G(D) --
+Eth1/16/3     604     eth  trunk  up      none                        10G(D) --
+Eth1/16/4     604     eth  trunk  up      none                        10G(D) --
+Eth1/17/1     604     eth  trunk  up      none                        10G(D) --
+Eth1/17/2     604     eth  trunk  up      none                        10G(D) --
+Eth1/17/3     604     eth  trunk  up      none                        10G(D) --
+Eth1/17/4     604     eth  trunk  up      none                        10G(D) --
+Eth1/18/1     604     eth  trunk  up      none                        10G(D) --
+Eth1/18/2     604     eth  trunk  up      none                        10G(D) --
+Eth1/18/3     604     eth  trunk  up      none                        10G(D) --
+Eth1/18/4     604     eth  trunk  up      none                        10G(D) --
+Eth1/19/1     604     eth  trunk  up      none                        10G(D) --
+Eth1/19/2     604     eth  trunk  up      none                        10G(D) --
+Eth1/19/3     604     eth  trunk  up      none                        10G(D) --
+Eth1/19/4     604     eth  trunk  up      none                        10G(D) --
+Eth1/20/1     604     eth  trunk  up      none                        10G(D) --
+Eth1/20/2     604     eth  trunk  up      none                        10G(D) --
+Eth1/20/3     604     eth  trunk  up      none                        10G(D) --
+Eth1/20/4     604     eth  trunk  up      none                        10G(D) --
+Eth1/21/1     604     eth  trunk  up      none                        10G(D) --
+Eth1/21/2     604     eth  access down    Link not connected          10G(D) --
+Eth1/21/3     604     eth  access down    Link not connected          10G(D) --
+Eth1/21/4     604     eth  access down    Link not connected          10G(D) --
+Eth1/22/1     604     eth  trunk  up      none                        10G(D) --
+Eth1/22/2     604     eth  access down    Administratively down       10G(D) --
+Eth1/22/3     604     eth  access down    Link not connected          10G(D) --
+Eth1/22/4     604     eth  access down    Link not connected          10G(D) --
+Eth1/23/1     604     eth  access down    SFP not inserted            10G(D) --
+Eth1/23/2     604     eth  access down    SFP not inserted            10G(D) --
+Eth1/23/3     604     eth  access down    SFP not inserted            10G(D) --
+Eth1/23/4     604     eth  access down    SFP not inserted            10G(D) --
+Eth1/24/1     604     eth  access down    SFP not inserted            10G(D) --
+Eth1/24/2     604     eth  access down    SFP not inserted            10G(D) --
+Eth1/24/3     604     eth  access down    SFP not inserted            10G(D) --
+Eth1/24/4     604     eth  access down    SFP not inserted            10G(D) --
+Eth1/25       1       eth  routed up      none                        40G(D) --
+Eth1/26       1       eth  access down    SFP not inserted            40G(D) --
+Eth1/27       1       eth  access down    SFP not inserted            40G(D) --
+Eth1/28       1       eth  access down    SFP not inserted            40G(D) --
+Eth1/29       1       eth  access down    SFP not inserted            40G(D) --
+Eth1/30       1       eth  access down    SFP not inserted            40G(D) --
+Eth1/31       --      eth  routed up      none                        40G(D) --
+Eth1/32       --      eth  routed up      none                        40G(D) --
+
+--------------------------------------------------------------------------------
+Port   VRF          Status IP Address                              Speed    MTU
+--------------------------------------------------------------------------------
+mgmt0  --           up     192.168.1.151                           100      1500
+
+-------------------------------------------------------------------------------
+Interface Secondary VLAN(Type)                    Status Reason                 
+-------------------------------------------------------------------------------
+Vlan1     --                                      down   Administratively down  
+Vlan604   --                                      down   VLAN is down           
+Vlan688   --                                      up     --        
+Vlan741   --                                      up     --        
+Vlan761   --                                      up     --        
+Vlan788   --                                      up     --        

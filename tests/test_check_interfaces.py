@@ -537,3 +537,31 @@ def test_find_lag_hierarchy_huawei(set_vendor_vars):
             vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
             check_interfaces.find_lag_hierarchy, None)
     do_interface_checks(interfaces, interface_objects)
+
+
+def test_find_lag_hierarchy_cisco_no_lag(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            'Ethernet1/31': {'member': None},
+            'Ethernet1/32': {'member': None}
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(),
+            get_file_contents('cisco_show_int_brief_no_lag.txt'),
+            vendor_vars['Cisco Nexus'], None, 'nxos',
+            check_interfaces.find_lag_hierarchy, None)
+    do_interface_checks(interfaces, interface_objects)
+
+
+def test_find_lag_hierarchy_huawei_no_lag(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            '40GE1/0/18': {'member': None},
+            '40GE1/0/5': {'member': None},
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(),
+            get_file_contents('huawei_show_int_brief_no_lag.txt'),
+            vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
+            check_interfaces.find_lag_hierarchy, None)
+    do_interface_checks(interfaces, interface_objects)
