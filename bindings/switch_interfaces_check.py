@@ -48,6 +48,8 @@ def check_switch_interfaces(task, interface_names):
              name='Check if interfaces bound to VRF')
     task.run(task=check_interfaces.find_lag_hierarchy,
              name='Discover LAG relationships')
+    task.run(task=check_interfaces.identify_breakout_ports,
+             name='Identify if interface created by breakout')
     result = 'Interfaces state and characteristics:\n'
     for interface in task.host['interfaces']:
         result += '\tInterface {} with "{}" description\n'.format(
@@ -56,6 +58,8 @@ def check_switch_interfaces(task, interface_names):
                 interface.admin_status, interface.oper_status)
         result += '\t\t{} mode, MAC address {}, MTU {} bytes\n'.format(
             interface.mode, interface.mac_address, interface.mtu)
+        if interface.breakout:
+            result += '\t\tInterface created by breakout (port-split)\n'
         if interface.oper_status == 'up' and not (interface.svi or
                                                   interface.subinterface):
             result += '\t\t{} Gb/s, {} duplex, '.format(interface.speed,

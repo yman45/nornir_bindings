@@ -687,3 +687,33 @@ def find_lag_hierarchy(task, interface_list=None):
     if not hier:
         result = 'No LAG present on a device'
     return Result(host=task.host, result=result)
+
+
+def identify_breakout_ports(task, interface_list=None):
+    '''Nornir task to identify interfaces created by breakout. Such state
+    identified by interface name. For NX-OS there will be 2 '/' symbols, for
+    VRPv8 there will be ':' symbol.
+    Arguments:
+        * task - instance or nornir.core.task.Task
+        * interface_list (defaults to None) - list of strings, which represents
+            switch interface names
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
+    if interface_list:
+        task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
+    result = 'Interfaces created by breakout:\n'
+    if task.host.platform not in ['nxos', 'huawei_vrpv8']:
+        raise UnsupportedNOS('task received unsupported NOS - {}'.format(
+            task.host.platform))
+    for interface in task.host['interfaces']:
+        if task.host.platform == 'nxos' and interface.name.count('/') == 2:
+            interface.breakout = True
+            result += f'\tInterface {interface.name} created by breakout'
+        elif task.host.platform == 'huawei_vrpv8' and interface.name.find(
+                ':') != -1:
+            interface.breakout = True
+            result += f'\tInterface {interface.name} created by breakout'
+        else:
+            interface.breakout = False
+    return Result(host=task.host, result=result)

@@ -565,3 +565,29 @@ def test_find_lag_hierarchy_huawei_no_lag(set_vendor_vars):
             vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
             check_interfaces.find_lag_hierarchy, None)
     do_interface_checks(interfaces, interface_objects)
+
+
+def test_identify_breakout_port_cisco(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            'Ethernet1/30': {'breakout': False},
+            'Ethernet1/3/1': {'breakout': True},
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(), None,
+            vendor_vars['Cisco Nexus'], None, 'nxos',
+            check_interfaces.identify_breakout_ports, None)
+    do_interface_checks(interfaces, interface_objects)
+
+
+def test_identify_breakout_port_huawei(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            '40GE1/0/5': {'breakout': False},
+            '40GE1/0/30:2': {'breakout': True},
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(), None,
+            vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
+            check_interfaces.identify_breakout_ports, None)
+    do_interface_checks(interfaces, interface_objects)
