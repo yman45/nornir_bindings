@@ -597,8 +597,11 @@ def get_interfaces_vrf_binding(task, interface_list=None):
         vrfs = vrf_interfaces.split('VPN-Instance Name and ID')[1:]
         for vrf in vrfs:
             vrf_name = vrf[vrf.index(':')+1:vrf.index(',')].strip()
-            interfaces_list = vrf[vrf.index(
-                'Interface list : ')+17:].split('\n')
+            if not re.search(r'interface number\s*:\s*0', vrf, flags=re.I):
+                interfaces_list = vrf[vrf.index(
+                    'Interface list : ')+17:].split('\n')
+            else:
+                interfaces_list = []
             vrf_bind_map.update({interface.strip(
                 ', '): vrf_name for interface in interfaces_list})
     else:
