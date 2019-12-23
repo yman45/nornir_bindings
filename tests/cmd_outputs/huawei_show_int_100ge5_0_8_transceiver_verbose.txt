@@ -1,0 +1,20 @@
+ 100GE5/0/8 transceiver information:
+-------------------------------------------------------------------
+ Common information:
+   Transceiver Type                      :40GBASE_BIDI
+   Connector Type                        :LC
+   Wavelength (nm)                       :850
+   Transfer Distance (m)                 :100(50um/125um OM3)
+   Digital Diagnostic Monitoring         :NO
+   Vendor Name                           :CISCO-AVAGO
+   Vendor Part Number                    :AFBR-79EBPZ-CS2
+   Ordering Name                         :
+-------------------------------------------------------------------
+ Manufacture information:
+   Manu. Serial Number                   :AVM2052U0D8
+   Manufacturing Date                    :2016-12-27+03:00
+   Vendor Name                           :CISCO-AVAGO
+-------------------------------------------------------------------
+ Alarm information:
+    Non-Huawei-Ethernet-Switch-Certified Transceiver
+-------------------------------------------------------------------

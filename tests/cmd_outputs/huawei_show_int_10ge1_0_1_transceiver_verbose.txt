@@ -1,0 +1,34 @@
+ 10GE1/0/1 transceiver information:
+-------------------------------------------------------------------
+ Common information:
+   Transceiver Type                      :10GBASE_SR
+   Connector Type                        :LC
+   Wavelength (nm)                       :850
+   Transfer Distance (m)                 :300(62.5um/125um OM1)
+                                          300(50um/125um OM2)
+                                          400(50um/125um OM4)
+   Digital Diagnostic Monitoring         :YES
+   Vendor Name                           :OEM
+   Vendor Part Number                    :GPP-85192-SRC
+   Ordering Name                         :
+-------------------------------------------------------------------
+ Manufacture information:
+   Manu. Serial Number                   :M1308102907
+   Manufacturing Date                    :2013-8-26+03:00
+   Vendor Name                           :OEM
+-------------------------------------------------------------------
+ Alarm information:
+-------------------------------------------------------------------
+ Diagnostic information: 
+   Temperature (Celsius)                 :14.92
+   Voltage (V)                           :3.36
+   Bias Current (mA)                     :5.72
+   Bias High Threshold (mA)              :12.00
+   Bias Low Threshold (mA)               :1.00
+   Current RX Power (dBm)                :-1.94
+   Default RX Power High Threshold (dBm) :0.00
+   Default RX Power Low Threshold (dBm)  :-14.00
+   Current TX Power (dBm)                :-4.20
+   Default TX Power High Threshold (dBm) :2.00
+   Default TX Power Low Threshold (dBm)  :-10.00
+-------------------------------------------------------------------

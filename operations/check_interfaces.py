@@ -723,6 +723,15 @@ def identify_breakout_ports(task, interface_list=None):
 
 
 def get_transceiver_stats(task, interface_list=None):
+    '''Nornir task to identify interfaces optical module stats, like RX power
+    and module type.
+    Arguments:
+        * task - instance or nornir.core.task.Task
+        * interface_list (defaults to None) - list of strings, which represents
+            switch interface names
+    Returns:
+        * instance of nornir.core.task.Result
+    '''
     if interface_list:
         task.host['interfaces'] = [SwitchInterface(x) for x in interface_list]
     result = 'Interface transceiver statistics:\n'
@@ -730,50 +739,64 @@ def get_transceiver_stats(task, interface_list=None):
     if task.host.platform not in ['nxos', 'huawei_vrpv8']:
         raise UnsupportedNOS('task received unsupported NOS - {}'.format(
             task.host.platform))
-    all_transceiver_stats = connection.send_command(
-                task.host['vendor_vars']['show interface transceiver detail'])
     for interface in task.host['interfaces']:
         if task.host.platform == 'nxos':
             pass
         elif task.host.platform == 'huawei_vrpv8':
-            # if not all_transceiver_stats:
-            # Work on non-fiber/no transceiver situation
-            stats_start = all_transceiver_stats.index(
-                    f'{interface} transceiver information:')
-            stats_end = all_transceiver_stats[stats_start+40:].find(
-                    'transceiver information:')
-            if stats_end == -1:
-                stats_end = len(all_transceiver_stats) - 1
-            stats_chunk = all_transceiver_stats[stats_start:stats_end]
+            transceiver_stats = connection.send_command(
+                task.host['vendor_vars'][
+                    'show interface transceiver detail'].format(
+                        interface.name))
+            if f'{interface} transceiver information' not in transceiver_stats:
+                interface.transceiver = None
+                interface.rx_power = None
+                interface.optical_lanes = None
+                interface.ddm = None
+                interface.module_type = None
+                result += (f'Interface {interface.name} has no'
+                           f'transceiver inserted or it is copper port')
+                continue
             ddm_supported = re.search(
-                    r'Digital Diagnostic Monitoring\s+:(YES|NO)', stats_chunk)
+                    r'Digital Diagnostic Monitoring\s+:(YES|NO)',
+                    transceiver_stats)
             interface.ddm = True if ddm_supported.group(1) == 'YES' else False
-            vendor_name = re.search(r'Vendor Name\s+:(.+)', stats_chunk)
+            vendor_name = re.search(r'Vendor Name\s+:(.+)', transceiver_stats)
             transceiver_model = re.search(r'Vendor Part Number\s+:(.+)',
-                                          stats_chunk)
+                                          transceiver_stats)
             interface.transceiver = vendor_name.group(
                     1) + ' ' + transceiver_model.group(1)
             interface.module_type = re.search(
-                    r'Transceiver Type\s+:(.+)', stats_chunk).group(1).replace(
-                            '_', '-')
-            if not interface.ddm or 'Current RX Power' not in stats_chunk:
+                    r'Transceiver Type\s+:(.+)',
+                    transceiver_stats).group(1).replace('_', '-')
+            if not interface.ddm or 'Current RX Pow' not in transceiver_stats:
                 # DDM can be supported, but no stats listed
                 interface.optical_lanes = None
                 interface.rx_power = None
+                result += (f'Interface {interface.name} is of '
+                           f'{interface.module_type} type and '
+                           f'{interface.transceiver} model, but '
+                           f'DDM either not supported or can not be'
+                           f'gathered')
                 continue
-            if 'Lane' not in stats_chunk:
+            if 'Lane' not in transceiver_stats:
                 interface.optical_lanes = 1
                 rx_power = re.search(
                     r'Current RX Power \(dBm\)\s+:(-?\d{1,2}\.\d{1,2})',
-                    stats_chunk)
+                    transceiver_stats)
                 interface.rx_power = float(rx_power.group(1))
             else:
-                rx_pwr_start = stats_chunk.index('Current RX Power (dBm)')
-                next_new_line = stats_chunk.index('\n', rx_pwr_start)
-                rx_pwr_end = stats_chunk.index('Default RX Power',
-                                               rx_pwr_start)
-                rx_pwr_chunk = stats_chunk[next_new_line:rx_pwr_end]
+                rx_pwr_start = transceiver_stats.index(
+                        'Current RX Power (dBm)')
+                next_new_line = transceiver_stats.index('\n', rx_pwr_start)
+                rx_pwr_end = transceiver_stats.index('Default RX Power',
+                                                     rx_pwr_start)
+                rx_pwr_chunk = transceiver_stats[next_new_line:rx_pwr_end]
                 lanes_rxs = re.findall(r'(-?\d{1,2}\.\d{1,2})', rx_pwr_chunk)
                 interface.rx_power = list(map(float, lanes_rxs))
                 interface.optical_lanes = len(interface.rx_power)
+            result += (
+                f'Interface {interface.name} is of {interface.module_type} '
+                f'type and {interface.transceiver} model. RX power is: '
+                f'{interface.rx_power}, lane number is '
+                f'{interface.optical_lanes}')
     return Result(host=task.host, result=result)
