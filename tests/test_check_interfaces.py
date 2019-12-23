@@ -591,3 +591,63 @@ def test_identify_breakout_port_huawei(set_vendor_vars):
             vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
             check_interfaces.identify_breakout_ports, None)
     do_interface_checks(interfaces, interface_objects)
+
+
+def test_find_rx_power_single_lane_huawei(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            '10GE1/0/1': {'rx_power': -1.94, 'optical_lanes': 1, 'ddm': True,
+                          'module_type': '10GBASE-SR',
+                          'transceiver': 'OEM GPP-85192-SRC'},
+            '10GE1/0/2': {'rx_power': -1.86, 'optical_lanes': 1, 'ddm': True,
+                          'module_type': '10GBASE-SR',
+                          'transceiver': 'CISCO-FINISAR FTLX8571D3BCL-C2'}
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(),
+            get_file_contents(
+                'huawei_show_int_transceiver_verbose_single_lane.txt'),
+            vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
+            check_interfaces.get_transceiver_stats, None)
+    do_interface_checks(interfaces, interface_objects)
+
+
+def test_find_rx_power_multi_lane_huawei(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            '40GE1/0/15': {'rx_power': [-2.90, -2.52, -2.34, -2.44],
+                           'optical_lanes': 4, 'ddm': True,
+                           'module_type': '40GBASE-SR4',
+                           'transceiver': 'FINISAR CORP FTL410QE3C'},
+            '40GE1/0/16': {'rx_power': [-2.55, -2.46, -2.56, -2.25],
+                           'optical_lanes': 4, 'ddm': True,
+                           'module_type': '40GBASE-SR4',
+                           'transceiver': 'FINISAR CORP FTL410QE3C'},
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(),
+            get_file_contents(
+                'huawei_show_int_transceiver_verbose_multi_lane.txt'),
+            vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
+            check_interfaces.get_transceiver_stats, None)
+    do_interface_checks(interfaces, interface_objects)
+
+
+def test_find_rx_power_no_dom_huawei(set_vendor_vars):
+    vendor_vars = set_vendor_vars
+    interfaces = {
+            '100GE5/0/0': {'rx_power': None, 'optical_lanes': None,
+                           'ddm': True, 'module_type': '100GBASE-SR4',
+                           'transceiver': 'NETWELL NW-QSFP28-SR4'},
+            '100GE5/0/8': {'rx_power': None, 'optical_lanes': None,
+                           'ddm': False, 'module_type': '40GBASE-BIDI',
+                           'transceiver': 'CISCO-AVAGO AFBR-79EBPZ-CS2'}
+            }
+    interface_objects = create_test_interfaces(
+            interfaces.keys(),
+            get_file_contents(
+                'huawei_show_int_transceiver_verbose_no_dom.txt'),
+            vendor_vars['Huawei CE'], None, 'huawei_vrpv8',
+            check_interfaces.get_transceiver_stats, None)
+    do_interface_checks(interfaces, interface_objects)
+
